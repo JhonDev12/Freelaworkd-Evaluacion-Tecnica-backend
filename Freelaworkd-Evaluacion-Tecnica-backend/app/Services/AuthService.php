@@ -28,12 +28,14 @@ class AuthService
             'name'     => $data['name'],
             'email'    => $data['email'],
             'password' => Hash::make($data['password']),
+            'role_id'  => 3, 
         ]);
-
+    
         $token = $user->createToken('api_token')->plainTextToken;
-
+    
         return compact('user', 'token');
     }
+    
 
     /**
      * Inicia sesión y devuelve un token para el usuario.

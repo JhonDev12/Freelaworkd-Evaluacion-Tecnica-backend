@@ -7,7 +7,7 @@ use App\Http\Controllers\PropuestaController;
 
 /**
  * ==========================================================================
- * Freelaworkd API Routes
+ * Freelaworkd API Routes ///////////////////////////////////////////////////
  * ==========================================================================
  *
  * Descripción general:
@@ -32,14 +32,14 @@ use App\Http\Controllers\PropuestaController;
  */
 
 // ==========================================================================
-// Módulo: Autenticación de usuarios
+// Módulo: Autenticación de usuarios ///////////////////////////////////////
 // ==========================================================================
 // Define los endpoints públicos y privados para el ciclo de autenticación.
 // Incluye registro, login y cierre de sesión protegido.
 Route::prefix('auth')->group(function () {
 
     // ----------------------------------------------------------------------
-    // Endpoints públicos
+    // Endpoints públicos /////////////////////////////////////////////////////
     // ----------------------------------------------------------------------
     Route::post('registro', [AuthController::class, 'registro'])
         ->name('auth.registro');
@@ -48,7 +48,7 @@ Route::prefix('auth')->group(function () {
         ->name('auth.login');
 
     // ----------------------------------------------------------------------
-    // Endpoints protegidos (requieren token Sanctum)
+    // Endpoints protegidos (requieren token Sanctum) ///////////////////////
     // ----------------------------------------------------------------------
     Route::middleware('auth:sanctum')->group(function () {
 
@@ -59,7 +59,7 @@ Route::prefix('auth')->group(function () {
 });
 
 // ==========================================================================
-// Módulo: Proyectos
+// Módulo: Proyectos /////////////////////////////////////////////////////////
 // ==========================================================================
 // CRUD protegido por Sanctum. Cada recurso representa un proyecto 
 // asociado a un usuario autenticado.
@@ -75,7 +75,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // ==========================================================================
-// Módulo: Propuestas
+// Módulo: Propuestas ///////////////////////////////////////////////////////
 // ==========================================================================
 // CRUD completo para la gestión de propuestas enviadas por freelancers 
 // a proyectos. Requiere autenticación mediante Sanctum.
@@ -90,8 +90,31 @@ Route::middleware('auth:sanctum')->group(function () {
         ]);
 });
 
+
+/**
+ * --------------------------------------------------------------------------
+ * Rutas protegidas - Módulo de Usuarios ///////////////////////////////////
+ * --------------------------------------------------------------------------
+ * Agrupa los endpoints del CRUD de usuarios bajo autenticación Sanctum.
+ * Solo los usuarios con un token válido pueden acceder a estas rutas.
+ * Apunta al controlador UserController, que gestiona las operaciones
+ * de listar, crear, consultar, actualizar y eliminar registros.
+ */
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('usuarios', \App\Http\Controllers\UserController::class)
+        ->names([
+            'index'   => 'usuarios.index',
+            'store'   => 'usuarios.store',
+            'show'    => 'usuarios.show',
+            'update'  => 'usuarios.update',
+            'destroy' => 'usuarios.destroy',
+        ]);
+});
+
+
+
 // ==========================================================================
-// Fallback global para rutas no definidas
+// Fallback global para rutas no definidas /////////////////////////////////
 // ==========================================================================
 // Garantiza que las rutas inexistentes respondan con un JSON estructurado,
 // evitando respuestas HTML en clientes SPA o móviles.

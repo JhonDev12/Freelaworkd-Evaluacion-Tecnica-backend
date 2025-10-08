@@ -2,34 +2,28 @@
 
 namespace App\Services;
 
-use App\Repositories\PropuestaRepository;
+use App\Repositories\Contracts\PropuestaRepositoryInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
-/**
- * Servicio de Propuestas
- *
- * Encapsula la lógica de negocio para gestionar propuestas:
- * creación, consulta, actualización y eliminación.
- */
 class PropuestaService
 {
-    public function __construct(private PropuestaRepository $propuestaRepository) {}
+    public function __construct(private PropuestaRepositoryInterface $repository) {}
 
     public function listar()
     {
-        return $this->propuestaRepository->obtenerTodas();
+        return $this->repository->obtenerTodas();
     }
 
-    public function crear(array $data, int $usuarioId)
+    public function crear(array $data, int $userId)
     {
-        $data['usuario_id'] = $usuarioId;
-        return $this->propuestaRepository->crear($data);
+        $data['usuario_id'] = $userId;
+        return $this->repository->crear($data);
     }
 
     public function obtener(int $id)
     {
-        $propuesta = $this->propuestaRepository->obtenerPorId($id);
-        if (! $propuesta) {
+        $propuesta = $this->repository->obtenerPorId($id);
+        if (!$propuesta) {
             throw new ModelNotFoundException('Propuesta no encontrada.');
         }
         return $propuesta;
@@ -37,11 +31,11 @@ class PropuestaService
 
     public function actualizar(int $id, array $data)
     {
-        return $this->propuestaRepository->actualizar($id, $data);
+        return $this->repository->actualizar($id, $data);
     }
 
     public function eliminar(int $id): void
     {
-        $this->propuestaRepository->eliminar($id);
+        $this->repository->eliminar($id);
     }
 }
