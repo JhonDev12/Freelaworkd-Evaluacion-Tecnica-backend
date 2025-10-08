@@ -5,53 +5,99 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AuthLoginRequest;
 use App\Http\Requests\AuthRegisterRequest;
 use App\Services\AuthService;
+use Dotenv\Exception\ValidationException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
- * Controlador responsable de la autenticación de usuarios.
- * 
- * Expone los endpoints de registro, inicio y cierre de sesión,
- * delegando la lógica de negocio al servicio de autenticación.
+ * ==========================================================================
+ * Controlador de Autenticación (AuthController)
+ * ==========================================================================
+ *
+ * Este controlador orquesta el flujo completo de autenticación de usuarios:
+ * registro, inicio de sesión y cierre de sesión seguro mediante tokens
+ * personales generados con Laravel Sanctum.
+ *
+ * ➤ Patrón aplicado: Controller → Service
+ *    - El controlador solo coordina solicitudes y respuestas HTTP.
+ *    - La lógica de negocio se delega a la capa de servicios (AuthService).
+ *
+ * ➤ Estilo de respuesta:
+ *    - Todas las respuestas se entregan en formato JSON consistente.
+ *    - Se incluyen mensajes claros y estados HTTP apropiados.
+ *
+ * ➤ Errores y observabilidad:
+ *    - Captura y logueo de excepciones con contexto.
+ *    - Mensajes de error controlados para clientes de API (no técnicos).
  */
 class AuthController extends Controller
 {
     public function __construct(private AuthService $authService) {}
 
-    /**
-     * Registra un nuevo usuario.
-     */
+    
     public function registro(AuthRegisterRequest $request): JsonResponse
     {
-        $data = $this->authService->register($request->validated());
+        try {
+            $data = $this->authService->register($request->validated());
 
-        return response()->json([
-            'mensaje' => 'Usuario registrado correctamente.',
-            'data' => $data,
-        ], 201);
+            return response()->json([
+                'mensaje' => 'Usuario registrado correctamente.',
+                'data' => $data,
+            ], 201);
+
+        } catch (Throwable $e) {
+            Log::error('Error al registrar usuario', ['error' => $e->getMessage()]);
+
+            return response()->json([
+                'mensaje' => 'Error interno al registrar el usuario.',
+            ], 500);
+        }
     }
 
-    /**
-     * Inicia sesión y genera un token de acceso.
-     */
+
     public function login(AuthLoginRequest $request): JsonResponse
     {
-        $data = $this->authService->login($request->validated());
+        try {
+            $data = $this->authService->login($request->validated());
 
-        return response()->json([
-            'mensaje' => 'Inicio de sesión exitoso.',
-            'data' => $data,
-        ]);
+            return response()->json([
+                'mensaje' => 'Inicio de sesión exitoso.',
+                'data' => $data,
+            ], 200);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'mensaje' => 'Credenciales incorrectas.',
+            ], 401);
+
+        } catch (Throwable $e) {
+            Log::error('Error al iniciar sesión', ['error' => $e->getMessage()]);
+
+            return response()->json([
+                'mensaje' => 'Error interno al procesar la solicitud de inicio de sesión.',
+            ], 500);
+        }
     }
 
-    /**
-     * Cierra la sesión actual invalidando el token.
-     */
+   
     public function logout(): JsonResponse
     {
-        $this->authService->logout();
+        try {
+            $this->authService->logout();
 
-        return response()->json([
-            'mensaje' => 'Sesión cerrada correctamente.',
-        ]);
+            return response()->json([
+                'mensaje' => 'Su sesión ha sido cerrada exitosamente.',
+                'status' => 200,
+            ], 200);
+
+        } catch (Throwable $e) {
+            Log::error('Error al cerrar sesión', ['error' => $e->getMessage()]);
+
+            return response()->json([
+                'mensaje' => 'Error al cerrar sesión.',
+                'status' => 500,
+            ], 500);
+        }
     }
 }
