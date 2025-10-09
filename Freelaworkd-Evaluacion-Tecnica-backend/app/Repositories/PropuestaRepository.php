@@ -3,8 +3,17 @@
 namespace App\Repositories;
 
 use App\Models\Propuesta;
+use App\Repositories\Contracts\PropuestaRepositoryInterface;
 
-class PropuestaRepository
+/**
+ * Repositorio de propuestas.
+ *
+ * Encapsula el acceso a la capa de persistencia del modelo Propuesta.
+ * Se encarga de las operaciones CRUD principales y del manejo de relaciones.
+ * 
+ * Este diseño promueve el desacoplamiento y facilita el testing.
+ */
+class PropuestaRepository implements PropuestaRepositoryInterface
 {
     public function obtenerTodas()
     {

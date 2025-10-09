@@ -3,12 +3,13 @@
 namespace App\Repositories;
 
 use App\Models\Proyecto;
+use App\Repositories\Contracts\ProyectoRepositoryInterface;
 
-class ProyectoRepository
+class ProyectoRepository implements ProyectoRepositoryInterface
 {
     public function obtenerTodos()
     {
-        return Proyecto::with('usuario')->latest()->get();
+        return Proyecto::all();
     }
 
     public function crear(array $datos)
@@ -18,7 +19,7 @@ class ProyectoRepository
 
     public function obtenerPorId(int $id)
     {
-        return Proyecto::with('usuario')->find($id);
+        return Proyecto::find($id);
     }
 
     public function actualizar(int $id, array $datos)
@@ -30,6 +31,6 @@ class ProyectoRepository
 
     public function eliminar(int $id): void
     {
-        Proyecto::findOrFail($id)->delete();
+        Proyecto::destroy($id);
     }
 }

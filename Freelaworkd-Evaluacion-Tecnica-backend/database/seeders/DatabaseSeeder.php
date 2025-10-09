@@ -2,22 +2,48 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
+use App\Models\Role;
 
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Seed the application's database.
+     * Ejecuta los seeders principales del sistema.
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Ejecutar los seeders de roles
+        $this->call(RoleSeeder::class);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Obtener los roles desde la base de datos
+        $roles = Role::pluck('id', 'nombre');
+
+        // Crear 4 super_admin
+        User::factory(4)->create([
+            'role_id' => $roles['super_admin'],
+            'password' => Hash::make('12345678'),
+        ]);
+
+        // Crear 4 admin
+        User::factory(4)->create([
+            'role_id' => $roles['admin'],
+            'password' => Hash::make('12345678'),
+        ]);
+
+        // Crear 4 usuarios normales
+        User::factory(4)->create([
+            'role_id' => $roles['user'],
+            'password' => Hash::make('12345678'),
+        ]);
+
+        // ✅ Opcional: Usuario principal para pruebas manuales
+        User::create([
+            'name' => 'Jhon Dev',
+            'email' => 'jhon@example.com',
+            'password' => Hash::make('12345678'),
+            'role_id' => $roles['super_admin'],
         ]);
     }
 }
