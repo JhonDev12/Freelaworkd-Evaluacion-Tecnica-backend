@@ -35,7 +35,6 @@ class AuthController extends Controller
 {
     public function __construct(private AuthService $authService) {}
 
-    
     public function registro(AuthRegisterRequest $request): JsonResponse
     {
         try {
@@ -43,7 +42,7 @@ class AuthController extends Controller
 
             return response()->json([
                 'mensaje' => 'Usuario registrado correctamente.',
-                'data' => $data,
+                'data'    => $data,
             ], 201);
 
         } catch (Throwable $e) {
@@ -55,7 +54,6 @@ class AuthController extends Controller
         }
     }
 
-
     public function login(AuthLoginRequest $request): JsonResponse
     {
         try {
@@ -63,7 +61,7 @@ class AuthController extends Controller
 
             return response()->json([
                 'mensaje' => 'Inicio de sesión exitoso.',
-                'data' => $data,
+                'data'    => $data,
             ], 200);
 
         } catch (ValidationException $e) {
@@ -80,7 +78,6 @@ class AuthController extends Controller
         }
     }
 
-   
     public function logout(): JsonResponse
     {
         try {
@@ -88,7 +85,7 @@ class AuthController extends Controller
 
             return response()->json([
                 'mensaje' => 'Su sesión ha sido cerrada exitosamente.',
-                'status' => 200,
+                'status'  => 200,
             ], 200);
 
         } catch (Throwable $e) {
@@ -96,7 +93,7 @@ class AuthController extends Controller
 
             return response()->json([
                 'mensaje' => 'Error al cerrar sesión.',
-                'status' => 500,
+                'status'  => 500,
             ], 500);
         }
     }

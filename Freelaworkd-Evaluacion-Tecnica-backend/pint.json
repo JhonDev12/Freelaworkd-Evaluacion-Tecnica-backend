@@ -1,0 +1,14 @@
+{
+    "preset": "laravel",
+    "exclude": [
+      "vendor",
+      "storage",
+      "node_modules",
+      "bootstrap/cache"
+    ],
+    "rules": {
+      "binary_operator_spaces": {"default": "align_single_space_minimal"},
+      "phpdoc_summary": false,
+      "ordered_imports": {"sort_algorithm": "alpha"}
+    }
+  }

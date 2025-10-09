@@ -1,11 +1,11 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\PropuestaController;
+use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
 
 /**
  * ==========================================================================
@@ -92,7 +92,6 @@ Route::middleware('auth:sanctum')->group(function () {
         ]);
 });
 
-
 /**
  * --------------------------------------------------------------------------
  * Rutas protegidas - Módulo de Usuarios ///////////////////////////////////
@@ -103,7 +102,7 @@ Route::middleware('auth:sanctum')->group(function () {
  * de listar, crear, consultar, actualizar y eliminar registros.
  */
 Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('usuarios',UserController::class)
+    Route::apiResource('usuarios', UserController::class)
         ->names([
             'index'   => 'usuarios.index',
             'store'   => 'usuarios.store',
@@ -111,9 +110,9 @@ Route::middleware('auth:sanctum')->group(function () {
             'update'  => 'usuarios.update',
             'destroy' => 'usuarios.destroy',
         ]);
-         // Ruta específica para asignar rol
+    // Ruta específica para asignar rol
     Route::patch('usuarios/{id}/rol', [UserController::class, 'asignarRol'])
-    ->name('usuarios.asignarRol');
+        ->name('usuarios.asignarRol');
 });
 
 /**
@@ -132,6 +131,43 @@ Route::apiResource('roles', RoleController::class)
         'destroy' => 'roles.destroy',
     ]);
 
+/**
+ * --------------------------------------------------------------------------
+ * Rutas protegidas del módulo de Habilidades ///////////////////////////////
+ * --------------------------------------------------------------------------
+ *
+ * Define el CRUD RESTful para la gestión de habilidades dentro del sistema.
+ * Todas las operaciones requieren autenticación mediante Laravel Sanctum.
+ *
+ * Diseño:
+ * - Estructura estandarizada con `Route::apiResource`.
+ * - Endpoints consistentes con las convenciones REST.
+ * - Nombres de rutas explícitos para facilitar pruebas y políticas.
+ *
+ * Seguridad:
+ * - Acceso restringido a usuarios autenticados.
+ * - Validaciones y lógica de negocio delegadas al `HabilidadController`.
+ */
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('habilidades', \App\Http\Controllers\HabilidadController::class)
+        ->names([
+            'index'   => 'habilidades.index',
+            'store'   => 'habilidades.store',
+            'show'    => 'habilidades.show',
+            'update'  => 'habilidades.update',
+            'destroy' => 'habilidades.destroy',
+        ]);
+});
+
+// ==========================================================================
+// Asignación de habilidades a usuarios /////////////////////////////////////
+// ==========================================================================
+// Permite asignar una o más habilidades a un usuario existente.
+// Requiere autenticación mediante Sanctum y delega la lógica
+// al método `asignarHabilidades` del UserController.
+Route::patch('usuarios/{id}/habilidades', [UserController::class, 'asignarHabilidades'])
+    ->middleware('auth:sanctum')
+    ->name('usuarios.asignarHabilidades');
 
 // ==========================================================================
 // Fallback global para rutas no definidas /////////////////////////////////

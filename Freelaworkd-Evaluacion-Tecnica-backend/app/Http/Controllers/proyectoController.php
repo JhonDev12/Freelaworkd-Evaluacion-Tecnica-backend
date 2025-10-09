@@ -13,7 +13,7 @@ use Illuminate\Http\JsonResponse;
  * Controlador de Proyectos
  * ==========================================================================
  * Gestiona las operaciones CRUD del módulo de proyectos siguiendo el patrón
- * Service-Controller. Cada acción delega la lógica de negocio al 
+ * Service-Controller. Cada acción delega la lógica de negocio al
  * ProyectoService, asegurando una arquitectura limpia y mantenible.
  *
  * Características:
@@ -36,6 +36,7 @@ class ProyectoController extends Controller
     public function index()
     {
         $proyectos = $this->proyectoService->obtenerTodos();
+
         return ProyectoResource::collection($proyectos);
     }
 
@@ -54,6 +55,7 @@ class ProyectoController extends Controller
     public function show(int $id)
     {
         $proyecto = $this->proyectoService->obtenerPorId($id);
+
         return new ProyectoResource($proyecto);
     }
 

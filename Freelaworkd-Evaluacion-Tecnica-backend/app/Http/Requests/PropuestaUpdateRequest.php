@@ -2,10 +2,20 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Proyecto;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Validator;
 
 /**
- * Valida los datos al actualizar una propuesta existente.
+ * PropuestaUpdateRequest
+ *
+ * Valida la actualización de propuestas, garantizando coherencia
+ * y reglas de negocio sólidas:
+ * - No se permiten fechas pasadas.
+ * - El tiempo estimado debe ser realista.
+ * - Evita modificaciones sobre proyectos propios.
+ * - Valida coherencia entre tiempo estimado y fecha de entrega.
  */
 class PropuestaUpdateRequest extends FormRequest
 {
@@ -19,7 +29,47 @@ class PropuestaUpdateRequest extends FormRequest
         return [
             'descripcion'     => ['sometimes', 'string', 'max:1000'],
             'presupuesto'     => ['sometimes', 'numeric', 'min:1'],
-            'tiempo_estimado' => ['sometimes', 'integer', 'min:1'],
+            'tiempo_estimado' => ['sometimes', 'integer', 'min:1', 'max:365'],
+            'fecha_entrega'   => ['nullable', 'date', 'after:today'],
         ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'fecha_entrega.after' => 'La fecha de entrega debe ser una fecha futura.',
+            'tiempo_estimado.max' => 'El tiempo estimado no puede superar un año.',
+        ];
+    }
+
+    /**
+     * Validaciones adicionales basadas en lógica de negocio.
+     */
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function ($validator) {
+            // 🔹 Validar coherencia entre tiempo estimado y fecha de entrega
+            if ($this->filled('fecha_entrega') && $this->filled('tiempo_estimado')) {
+                $dias = now()->diffInDays($this->fecha_entrega, false);
+                if ($dias < $this->tiempo_estimado) {
+                    $validator->errors()->add(
+                        'fecha_entrega',
+                        'La fecha de entrega no coincide con el tiempo estimado proporcionado.'
+                    );
+                }
+            }
+
+            // 🔹 Validar que el usuario autenticado no modifique propuestas de sus propios proyectos
+            $propuesta = $this->route('propuesta'); // Laravel resolverá el modelo por route binding
+            if ($propuesta && $propuesta->proyecto) {
+                $proyecto = Proyecto::find($propuesta->proyecto_id);
+                if ($proyecto && $proyecto->user_id === Auth::id()) {
+                    $validator->errors()->add(
+                        'proyecto_id',
+                        'No puede modificar propuestas asociadas a sus propios proyectos.'
+                    );
+                }
+            }
+        });
     }
 }

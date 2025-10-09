@@ -3,6 +3,7 @@
 namespace App\Repositories\Contracts;
 
 use App\Models\Propuesta;
+
 /**
  * ==========================================================================
  * Interfaz PropuestaRepositoryInterface
@@ -20,12 +21,15 @@ use App\Models\Propuesta;
  * Un código extensible, testable y alineado con los estándares de arquitectura
  * limpia (Clean Architecture / DDD).
  */
-
 interface PropuestaRepositoryInterface
 {
     public function obtenerTodas();
+
     public function crear(array $data): Propuesta;
+
     public function obtenerPorId(int $id): ?Propuesta;
+
     public function actualizar(int $id, array $data): Propuesta;
+
     public function eliminar(int $id): void;
 }

@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Role;
+use Illuminate\Database\Seeder;
 
 class RoleSeeder extends Seeder
 {
@@ -14,22 +14,22 @@ class RoleSeeder extends Seeder
     {
         Role::insert([
             [
-                'nombre' => 'super_admin',
+                'nombre'      => 'super_admin',
                 'descripcion' => 'Control total del sistema',
-                'created_at' => now(),
-                'updated_at' => now(),
+                'created_at'  => now(),
+                'updated_at'  => now(),
             ],
             [
-                'nombre' => 'admin',
+                'nombre'      => 'admin',
                 'descripcion' => 'Gestión de usuarios y proyectos',
-                'created_at' => now(),
-                'updated_at' => now(),
+                'created_at'  => now(),
+                'updated_at'  => now(),
             ],
             [
-                'nombre' => 'user',
+                'nombre'      => 'user',
                 'descripcion' => 'Usuario estándar del sistema',
-                'created_at' => now(),
-                'updated_at' => now(),
+                'created_at'  => now(),
+                'updated_at'  => now(),
             ],
         ]);
     }

@@ -2,9 +2,8 @@
 
 namespace App\Services;
 
-use App\Repositories\Contracts\RoleRepositoryInterface;
 use App\Models\Role;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use App\Repositories\Contracts\RoleRepositoryInterface;
 
 /**
  * RoleService

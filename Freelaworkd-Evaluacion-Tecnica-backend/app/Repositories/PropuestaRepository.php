@@ -10,7 +10,7 @@ use App\Repositories\Contracts\PropuestaRepositoryInterface;
  *
  * Encapsula el acceso a la capa de persistencia del modelo Propuesta.
  * Se encarga de las operaciones CRUD principales y del manejo de relaciones.
- * 
+ *
  * Este diseño promueve el desacoplamiento y facilita el testing.
  */
 class PropuestaRepository implements PropuestaRepositoryInterface
@@ -34,6 +34,7 @@ class PropuestaRepository implements PropuestaRepositoryInterface
     {
         $propuesta = Propuesta::findOrFail($id);
         $propuesta->update($data);
+
         return $propuesta;
     }
 

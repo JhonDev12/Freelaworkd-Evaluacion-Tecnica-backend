@@ -18,7 +18,7 @@ use Throwable;
  * Contexto:
  * ----------
  * Este controlador define el punto de entrada HTTP para el módulo de
- * *propuestas* dentro de la plataforma Freelaworkd. 
+ * *propuestas* dentro de la plataforma Freelaworkd.
  * Está diseñado bajo los principios de **arquitectura limpia** y **separación
  * de responsabilidades**, actuando únicamente como mediador entre la capa
  * de transporte (HTTP) y la capa de negocio (Service Layer).
@@ -34,11 +34,11 @@ use Throwable;
  *
  * Principios aplicados:
  * ---------------------
- *  *Single Responsibility* → cada método gestiona una sola acción REST.  
- *  *Dependency Injection* → el servicio se inyecta explícitamente en el constructor.  
- *  *Consistency First* → las respuestas mantienen el mismo formato y estructura JSON.  
- *  *Fail Fast* → validaciones previas antes de interactuar con la capa de datos.  
- *  *Observabilidad* → registro estructurado de errores críticos con contexto útil.  
+ *  *Single Responsibility* → cada método gestiona una sola acción REST.
+ *  *Dependency Injection* → el servicio se inyecta explícitamente en el constructor.
+ *  *Consistency First* → las respuestas mantienen el mismo formato y estructura JSON.
+ *  *Fail Fast* → validaciones previas antes de interactuar con la capa de datos.
+ *  *Observabilidad* → registro estructurado de errores críticos con contexto útil.
  *
  * Formato de respuesta estándar:
  * ------------------------------
@@ -50,10 +50,8 @@ use Throwable;
  */
 class PropuestaController extends Controller
 {
-    
     public function __construct(private PropuestaService $propuestaService) {}
 
-   
     public function index(): JsonResponse
     {
         $propuestas = $this->propuestaService->listar();
@@ -64,7 +62,6 @@ class PropuestaController extends Controller
         );
     }
 
-   
     public function store(PropuestaStoreRequest $request): JsonResponse
     {
         try {
@@ -79,7 +76,7 @@ class PropuestaController extends Controller
 
         } catch (Throwable $e) {
             Log::error('Error al crear propuesta', [
-                'error' => $e->getMessage(),
+                'error'   => $e->getMessage(),
                 'usuario' => $request->user()->id ?? null,
             ]);
 
@@ -89,14 +86,13 @@ class PropuestaController extends Controller
         }
     }
 
-   
     public function show(int $id): PropuestaResource
     {
         $propuesta = $this->propuestaService->obtener($id);
+
         return new PropuestaResource($propuesta);
     }
 
-    
     public function update(PropuestaUpdateRequest $request, int $id): PropuestaResource
     {
         $propuesta = $this->propuestaService->actualizar(

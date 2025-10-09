@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
-use App\Models\Role;
 
 class DatabaseSeeder extends Seeder
 {
@@ -17,33 +17,28 @@ class DatabaseSeeder extends Seeder
 
         $this->call(RoleSeeder::class);
 
-
         $roles = Role::pluck('id', 'nombre');
 
-
         User::factory(4)->create([
-            'role_id' => $roles['super_admin'],
+            'role_id'  => $roles['super_admin'],
             'password' => Hash::make('12345678'),
         ]);
 
-
         User::factory(4)->create([
-            'role_id' => $roles['admin'],
+            'role_id'  => $roles['admin'],
             'password' => Hash::make('12345678'),
         ]);
 
-
         User::factory(4)->create([
-            'role_id' => $roles['user'],
+            'role_id'  => $roles['user'],
             'password' => Hash::make('12345678'),
         ]);
-
 
         User::create([
-            'name' => 'Jhon Dev',
-            'email' => 'jhon@example.com',
+            'name'     => 'Jhon Dev',
+            'email'    => 'jhon@example.com',
             'password' => Hash::make('12345678'),
-            'role_id' => $roles['super_admin'],
+            'role_id'  => $roles['super_admin'],
         ]);
     }
 }

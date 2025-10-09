@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Repositories\Contracts;
+
 /**
  * ==========================================================================
  * Interfaz ProyectoRepositoryInterface
@@ -18,12 +19,15 @@ namespace App\Repositories\Contracts;
  * Estructura predecible, mantenible y alineada con las buenas prácticas de
  * arquitectura limpia (Clean Architecture / DDD).
  */
-
 interface ProyectoRepositoryInterface
 {
     public function obtenerTodos();
+
     public function crear(array $datos);
+
     public function obtenerPorId(int $id);
+
     public function actualizar(int $id, array $datos);
+
     public function eliminar(int $id): void;
 }

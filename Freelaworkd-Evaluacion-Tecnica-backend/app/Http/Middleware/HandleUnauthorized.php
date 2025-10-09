@@ -21,11 +21,10 @@ class HandleUnauthorized
     {
         $response = $next($request);
 
-    
         if ($response->getStatusCode() === 401) {
             return response()->json([
                 'error' => 'No autenticado. Debes iniciar sesión para continuar.',
-                'code' => 401,
+                'code'  => 401,
             ], 401);
         }
 
@@ -33,7 +32,7 @@ class HandleUnauthorized
         if ($response->getStatusCode() === 403) {
             return response()->json([
                 'error' => 'Acceso denegado. No tienes permisos para esta acción.',
-                'code' => 403,
+                'code'  => 403,
             ], 403);
         }
 

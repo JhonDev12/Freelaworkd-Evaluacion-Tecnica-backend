@@ -3,53 +3,84 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Repositories\Contracts\UserRepositoryInterface;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 
+/**
+ * Servicio del dominio Usuario.
+ *
+ * Centraliza la lógica de negocio asociada a los usuarios:
+ * creación, actualización, eliminación, asignación de roles y habilidades.
+ * Mantiene el principio de separación de responsabilidades (SRP)
+ * delegando la persistencia al repositorio correspondiente.
+ */
 class UserService
 {
+    /**
+     * Inyección del repositorio de usuarios.
+     */
+    public function __construct(private UserRepositoryInterface $userRepository) {}
+
     public function listar()
     {
-        return User::all();
+        return $this->userRepository->obtenerTodos();
     }
 
     public function crear(array $data): User
     {
         $data['password'] = Hash::make($data['password']);
-        $data['role_id'] = $data['role_id'] ?? 3; // rol 'user' por defecto
-        return User::create($data);
+        $data['role_id']  = $data['role_id'] ?? 3; // rol 'user' por defecto
+
+        return $this->userRepository->crear($data);
     }
 
     public function obtenerPorId(int $id): User
     {
-        $usuario = User::find($id);
-        if (!$usuario) {
+        $usuario = $this->userRepository->obtenerPorId($id);
+
+        if (! $usuario) {
             throw new ModelNotFoundException('Usuario no encontrado.');
         }
+
         return $usuario;
     }
 
     public function actualizar(int $id, array $data): User
     {
-        $usuario = $this->obtenerPorId($id);
-
         if (isset($data['password'])) {
             $data['password'] = Hash::make($data['password']);
         }
 
-        $usuario->update($data);
-        return $usuario;
+        return $this->userRepository->actualizar($id, $data);
     }
 
     public function eliminar(int $id): void
     {
-        $usuario = $this->obtenerPorId($id);
-        $usuario->delete();
+        $this->userRepository->eliminar($id);
     }
 
     /**
-     * Lógica de negocio para asignar roles
+     * Asigna un conjunto de habilidades a un usuario.
+     *
+     * Valida que se reciba al menos una habilidad válida y
+     * delega la sincronización al repositorio de usuarios.
+     *
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function asignarHabilidades(int $usuarioId, array $habilidades): User
+    {
+        if (empty($habilidades)) {
+            throw new \InvalidArgumentException('Debe proporcionar al menos una habilidad válida.');
+        }
+
+        return $this->userRepository->asignarHabilidades($usuarioId, $habilidades);
+    }
+
+    /**
+     * Asigna un rol a un usuario con validación de permisos.
      */
     public function asignarRol(User $usuarioAuth, int $id, int $roleId): array
     {
@@ -63,7 +94,7 @@ class UserService
                 ];
             }
 
-            $usuario = $this->obtenerPorId($id);
+            $usuario = $this->userRepository->obtenerPorId($id);
             $usuario->update(['role_id' => $roleId]);
 
             return [
@@ -74,6 +105,7 @@ class UserService
             ];
         } catch (\Throwable $e) {
             Log::error('Error al asignar rol', ['error' => $e->getMessage()]);
+
             return [
                 'success' => false,
                 'mensaje' => 'Error interno al asignar el rol.',

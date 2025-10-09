@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UserAsignarHabilidadesRequest;
 use App\Http\Requests\UserStoreRequest;
 use App\Http\Requests\UserUpdateRequest;
 use App\Http\Resources\UserResource;
@@ -33,7 +34,6 @@ use Throwable;
  * Resultado:
  * Código mantenible, seguro y alineado con las convenciones RESTful.
  */
-
 class UserController extends Controller
 {
     public function __construct(private UserService $userService) {}
@@ -41,6 +41,7 @@ class UserController extends Controller
     public function index(): JsonResponse
     {
         $usuarios = $this->userService->listar();
+
         return response()->json(UserResource::collection($usuarios));
     }
 
@@ -48,11 +49,13 @@ class UserController extends Controller
     {
         try {
             $usuario = $this->userService->crear($request->validated());
+
             return (new UserResource($usuario))
                 ->response()
                 ->setStatusCode(201);
         } catch (Throwable $e) {
             Log::error('Error al crear usuario', ['error' => $e->getMessage()]);
+
             return response()->json(['mensaje' => 'Error al crear usuario.'], 500);
         }
     }
@@ -60,18 +63,21 @@ class UserController extends Controller
     public function show(int $id): UserResource
     {
         $usuario = $this->userService->obtenerPorId($id);
+
         return new UserResource($usuario);
     }
 
     public function update(UserUpdateRequest $request, int $id): UserResource
     {
         $usuario = $this->userService->actualizar($id, $request->validated());
+
         return new UserResource($usuario);
     }
 
     public function destroy(int $id): JsonResponse
     {
         $this->userService->eliminar($id);
+
         return response()->json(['mensaje' => 'Usuario eliminado correctamente.'], 204);
     }
 
@@ -92,5 +98,35 @@ class UserController extends Controller
             'mensaje' => $resultado['mensaje'],
             'data'    => $resultado['usuario'] ? new UserResource($resultado['usuario']) : null,
         ], $resultado['status']);
+    }
+
+    /**
+     * Asigna un conjunto de habilidades a un usuario.
+     *
+     * Recibe los IDs de habilidades validados mediante el Form Request
+     * `UserAsignarHabilidadesRequest` y delega la operación al servicio
+     * de usuarios.
+     *
+     * Utiliza manejo de excepciones para registrar errores en el log del sistema
+     * y devolver una respuesta estructurada en caso de fallo.
+     *
+     * @param  int  $id  ID del usuario al que se asignarán las habilidades
+     */
+    public function asignarHabilidades(UserAsignarHabilidadesRequest $request, int $id): JsonResponse
+    {
+        try {
+            $usuario = $this->userService->asignarHabilidades($id, $request->habilidades);
+
+            return response()->json([
+                'mensaje' => 'Habilidades asignadas correctamente.',
+                'data'    => new UserResource($usuario),
+            ], 200);
+        } catch (\Throwable $e) {
+            Log::error('Error al asignar habilidades', ['error' => $e->getMessage()]);
+
+            return response()->json([
+                'mensaje' => 'Error al asignar habilidades.',
+            ], 500);
+        }
     }
 }

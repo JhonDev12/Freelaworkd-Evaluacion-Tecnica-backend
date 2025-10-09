@@ -4,12 +4,13 @@ namespace App\Services;
 
 use App\Repositories\ProyectoRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+
 /**
  * Servicio de gestión de proyectos.
  *
  * Encapsula la lógica de negocio relacionada con los proyectos,
  * separando las operaciones del controlador y delegando el acceso
- * a datos al repositorio. 
+ * a datos al repositorio.
  *
  * Responsabilidades:
  * - Gestionar el ciclo de vida de los proyectos (CRUD).
@@ -17,10 +18,9 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
  * - Asociar automáticamente el proyecto al usuario autenticado.
  *
  * Esta capa permite mantener un código más limpio, testable
- * y desacoplado del framework, siguiendo el principio de 
+ * y desacoplado del framework, siguiendo el principio de
  * separación de responsabilidades (SoC) y la arquitectura en capas.
  */
-
 class ProyectoService
 {
     protected $proyectoRepository;
@@ -38,15 +38,17 @@ class ProyectoService
     public function crear(array $datos, int $userId)
     {
         $datos['usuario_id'] = $userId;
+
         return $this->proyectoRepository->crear($datos);
     }
 
     public function obtenerPorId(int $id)
     {
         $proyecto = $this->proyectoRepository->obtenerPorId($id);
-        if (!$proyecto) {
+        if (! $proyecto) {
             throw new ModelNotFoundException('Proyecto no encontrado.');
         }
+
         return $proyecto;
     }
 

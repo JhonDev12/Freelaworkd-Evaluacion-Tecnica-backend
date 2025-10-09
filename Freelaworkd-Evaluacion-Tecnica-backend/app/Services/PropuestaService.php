@@ -5,6 +5,15 @@ namespace App\Services;
 use App\Repositories\Contracts\PropuestaRepositoryInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
+/**
+ * Servicio del dominio Propuesta.
+ *
+ * Coordina la lógica de negocio asociada a las propuestas enviadas
+ * por los usuarios, delegando la persistencia al repositorio.
+ *
+ * Aplica el principio de separación de responsabilidades (SRP),
+ * sirviendo como capa intermedia entre los controladores y el acceso a datos.
+ */
 class PropuestaService
 {
     public function __construct(private PropuestaRepositoryInterface $repository) {}
@@ -17,15 +26,17 @@ class PropuestaService
     public function crear(array $data, int $userId)
     {
         $data['usuario_id'] = $userId;
+
         return $this->repository->crear($data);
     }
 
     public function obtener(int $id)
     {
         $propuesta = $this->repository->obtenerPorId($id);
-        if (!$propuesta) {
+        if (! $propuesta) {
             throw new ModelNotFoundException('Propuesta no encontrada.');
         }
+
         return $propuesta;
     }
 

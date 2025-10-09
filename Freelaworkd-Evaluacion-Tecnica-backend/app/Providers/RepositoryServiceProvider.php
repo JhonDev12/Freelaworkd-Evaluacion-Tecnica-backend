@@ -2,15 +2,17 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use App\Repositories\Contracts\ProyectoRepositoryInterface;
-use App\Repositories\ProyectoRepository;
+use App\Repositories\Contracts\HabilidadRepositoryInterface;
 use App\Repositories\Contracts\PropuestaRepositoryInterface;
+use App\Repositories\Contracts\ProyectoRepositoryInterface;
 use App\Repositories\Contracts\RoleRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Repositories\HabilidadRepository;
 use App\Repositories\PropuestaRepository;
+use App\Repositories\ProyectoRepository;
 use App\Repositories\RoleRepository;
 use App\Repositories\UserRepository;
+use Illuminate\Support\ServiceProvider;
 
 /**
  * RepositoryServiceProvider
@@ -34,8 +36,12 @@ class RepositoryServiceProvider extends ServiceProvider
     {
         $this->app->bind(ProyectoRepositoryInterface::class, ProyectoRepository::class);
         $this->app->bind(PropuestaRepositoryInterface::class, PropuestaRepository::class);
-        $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
+        $this->app->bind(UserRepositoryInterface::class, UserRepositoryInterface::class);
         $this->app->bind(RoleRepositoryInterface::class, RoleRepository::class);
+        $this->app->bind(HabilidadRepositoryInterface::class, HabilidadRepository::class);
+        $this->app->bind(UserRepositoryInterface::class, UserRepository::class
+        );
+
     }
 
     /**

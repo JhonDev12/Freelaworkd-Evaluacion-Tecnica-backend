@@ -27,9 +27,10 @@ class RoleRepository implements RoleRepositoryInterface
     public function obtenerPorId(int $id): ?Role
     {
         $rol = Role::find($id);
-        if (!$rol) {
+        if (! $rol) {
             throw new ModelNotFoundException("Rol no encontrado con ID {$id}");
         }
+
         return $rol;
     }
 
@@ -37,6 +38,7 @@ class RoleRepository implements RoleRepositoryInterface
     {
         $rol = $this->obtenerPorId($id);
         $rol->update($data);
+
         return $rol;
     }
 

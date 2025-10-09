@@ -28,14 +28,13 @@ class AuthService
             'name'     => $data['name'],
             'email'    => $data['email'],
             'password' => Hash::make($data['password']),
-            'role_id'  => 3, 
+            'role_id'  => 3,
         ]);
-    
+
         $token = $user->createToken('api_token')->plainTextToken;
-    
+
         return compact('user', 'token');
     }
-    
 
     /**
      * Inicia sesión y devuelve un token para el usuario.
@@ -78,7 +77,7 @@ class AuthService
 
         // Seguridad: revoca solo si pertenece al usuario autenticado
         if ((int) $accessToken->tokenable_id === (int) Auth::id()
-            && $accessToken->tokenable_type === User::class) {
+            && $accessToken->tokenable_type  === User::class) {
             $accessToken->delete();
         }
     }

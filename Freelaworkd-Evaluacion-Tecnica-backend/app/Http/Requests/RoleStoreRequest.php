@@ -35,7 +35,7 @@ class RoleStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nombre' => 'required|string|max:50|unique:roles,nombre',
+            'nombre'      => 'required|string|max:50|unique:roles,nombre',
             'descripcion' => 'nullable|string|max:255',
         ];
     }
@@ -47,8 +47,8 @@ class RoleStoreRequest extends FormRequest
     {
         return [
             'nombre.required' => 'El nombre del rol es obligatorio.',
-            'nombre.unique' => 'Ya existe un rol con este nombre.',
-            'nombre.max' => 'El nombre no puede exceder los 50 caracteres.',
+            'nombre.unique'   => 'Ya existe un rol con este nombre.',
+            'nombre.max'      => 'El nombre no puede exceder los 50 caracteres.',
             'descripcion.max' => 'La descripción no puede exceder los 255 caracteres.',
         ];
     }
