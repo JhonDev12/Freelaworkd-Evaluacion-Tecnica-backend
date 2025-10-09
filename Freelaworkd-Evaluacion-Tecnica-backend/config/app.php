@@ -169,6 +169,9 @@ return [
     |
     */
     App\Providers\RepositoryServiceProvider::class,
+    Illuminate\Hashing\HashServiceProvider::class,
+     Illuminate\Session\SessionServiceProvider::class,
+
 ],
 
 ];

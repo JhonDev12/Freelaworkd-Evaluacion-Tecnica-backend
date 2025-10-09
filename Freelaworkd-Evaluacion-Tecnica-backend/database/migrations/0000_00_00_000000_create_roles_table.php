@@ -8,7 +8,7 @@ return new class extends Migration
 {
     /**
      * Crea la tabla de roles del sistema.
-     * Define los niveles de acceso disponibles para los usuarios.
+     * Define los niveles de acceso y permisos generales.
      */
     public function up(): void
     {
@@ -18,11 +18,6 @@ return new class extends Migration
             $table->string('descripcion')->nullable();
             $table->timestamps();
         });
-
-        // Relación usuarios - roles
-        Schema::table('users', function (Blueprint $table) {
-            $table->foreignId('role_id')->default(1)->constrained('roles');
-        });
     }
 
     /**
@@ -30,10 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('role_id');
-        });
-
         Schema::dropIfExists('roles');
     }
 };
