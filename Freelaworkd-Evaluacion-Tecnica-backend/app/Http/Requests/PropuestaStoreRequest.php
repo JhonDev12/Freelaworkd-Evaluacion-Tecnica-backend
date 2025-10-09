@@ -11,7 +11,7 @@ class PropuestaStoreRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // Ya está protegido por Sanctum
+        return true; 
     }
 
     public function rules(): array

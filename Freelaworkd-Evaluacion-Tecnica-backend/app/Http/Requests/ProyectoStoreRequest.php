@@ -3,7 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-
+/**
+ * Valida los datos al crear un nuevo proyecto.
+ */
 class ProyectoStoreRequest extends FormRequest
 {
     public function authorize(): bool

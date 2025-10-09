@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\PropuestaController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\UserController;
 
 /**
  * ==========================================================================
@@ -13,8 +15,8 @@ use App\Http\Controllers\PropuestaController;
  * Descripción general:
  * --------------------
  * Este archivo define los endpoints principales expuestos por la API.
- * Implementa una arquitectura RESTful robusta, donde la autenticación 
- * se gestiona mediante Laravel Sanctum para controlar el acceso a los 
+ * Implementa una arquitectura RESTful robusta, donde la autenticación
+ * se gestiona mediante Laravel Sanctum para controlar el acceso a los
  * recursos protegidos.
  *
  * Principios de diseño:
@@ -61,7 +63,7 @@ Route::prefix('auth')->group(function () {
 // ==========================================================================
 // Módulo: Proyectos /////////////////////////////////////////////////////////
 // ==========================================================================
-// CRUD protegido por Sanctum. Cada recurso representa un proyecto 
+// CRUD protegido por Sanctum. Cada recurso representa un proyecto
 // asociado a un usuario autenticado.
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('proyectos', ProyectoController::class)
@@ -77,7 +79,7 @@ Route::middleware('auth:sanctum')->group(function () {
 // ==========================================================================
 // Módulo: Propuestas ///////////////////////////////////////////////////////
 // ==========================================================================
-// CRUD completo para la gestión de propuestas enviadas por freelancers 
+// CRUD completo para la gestión de propuestas enviadas por freelancers
 // a proyectos. Requiere autenticación mediante Sanctum.
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('propuestas', PropuestaController::class)
@@ -101,7 +103,7 @@ Route::middleware('auth:sanctum')->group(function () {
  * de listar, crear, consultar, actualizar y eliminar registros.
  */
 Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('usuarios', \App\Http\Controllers\UserController::class)
+    Route::apiResource('usuarios',UserController::class)
         ->names([
             'index'   => 'usuarios.index',
             'store'   => 'usuarios.store',
@@ -109,8 +111,26 @@ Route::middleware('auth:sanctum')->group(function () {
             'update'  => 'usuarios.update',
             'destroy' => 'usuarios.destroy',
         ]);
+         // Ruta específica para asignar rol
+    Route::patch('usuarios/{id}/rol', [UserController::class, 'asignarRol'])
+    ->name('usuarios.asignarRol');
 });
 
+/**
+ * --------------------------------------------------------------------------
+ * Rutas protegidas — Módulo de Roles ///////////////////////////////////////
+ * --------------------------------------------------------------------------
+ * CRUD RESTful para la gestión de roles del sistema.
+ * Solo accesible mediante autenticación Sanctum.
+ */
+Route::apiResource('roles', RoleController::class)
+    ->names([
+        'index'   => 'roles.index',
+        'store'   => 'roles.store',
+        'show'    => 'roles.show',
+        'update'  => 'roles.update',
+        'destroy' => 'roles.destroy',
+    ]);
 
 
 // ==========================================================================

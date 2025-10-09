@@ -1,7 +1,5 @@
 <?php
 
-use App\Providers\RepositoryServiceProvider;
-
 return [
 
     /*
@@ -9,9 +7,9 @@ return [
     | Application Name
     |--------------------------------------------------------------------------
     |
-    | Este valor define el nombre de la aplicación. Puede utilizarse en 
-    | notificaciones, encabezados de vistas u otros contextos donde se 
-    | requiera identificar la instancia actual del sistema.
+    | This value is the name of your application, which will be used when the
+    | framework needs to place the application's name in a notification or
+    | other UI elements where an application name needs to be displayed.
     |
     */
 
@@ -22,8 +20,9 @@ return [
     | Application Environment
     |--------------------------------------------------------------------------
     |
-    | Determina el entorno actual de ejecución de la aplicación 
-    | (local, staging, production, etc.). Se define en el archivo .env.
+    | This value determines the "environment" your application is currently
+    | running in. This may determine how you prefer to configure various
+    | services the application utilizes. Set this in your ".env" file.
     |
     */
 
@@ -34,8 +33,9 @@ return [
     | Application Debug Mode
     |--------------------------------------------------------------------------
     |
-    | Activa el modo debug, mostrando trazas de errores detalladas.
-    | En producción debe estar deshabilitado por seguridad.
+    | When your application is in debug mode, detailed error messages with
+    | stack traces will be shown on every error that occurs within your
+    | application. If disabled, a simple generic error page is shown.
     |
     */
 
@@ -46,8 +46,9 @@ return [
     | Application URL
     |--------------------------------------------------------------------------
     |
-    | URL base del proyecto. Es utilizada internamente por Artisan 
-    | para la generación de rutas absolutas y notificaciones.
+    | This URL is used by the console to properly generate URLs when using
+    | the Artisan command line tool. You should set this to the root of
+    | the application so that it's available within Artisan commands.
     |
     */
 
@@ -58,38 +59,44 @@ return [
     | Application Timezone
     |--------------------------------------------------------------------------
     |
-    | Define la zona horaria por defecto para el framework y PHP.
-    | Se recomienda ajustarla al país de despliegue.
+    | Here you may specify the default timezone for your application, which
+    | will be used by the PHP date and date-time functions. The timezone
+    | is set to "UTC" by default as it is suitable for most use cases.
     |
     */
 
-    'timezone' => env('APP_TIMEZONE', 'UTC'),
+    'timezone' => 'UTC',
 
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------
     |
-    | Configura el idioma principal de la aplicación.
-    | También permite definir un idioma de respaldo y uno para Faker.
+    | The application locale determines the default locale that will be used
+    | by Laravel's translation / localization methods. This option can be
+    | set to any locale for which you plan to have translation strings.
     |
     */
 
-    'locale' => env('APP_LOCALE', 'es'),
+    'locale' => env('APP_LOCALE', 'en'),
+
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
-    'faker_locale' => env('APP_FAKER_LOCALE', 'es_ES'),
+
+    'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
 
     /*
     |--------------------------------------------------------------------------
     | Encryption Key
     |--------------------------------------------------------------------------
     |
-    | Clave utilizada por el servicio de encriptación de Laravel.
-    | Debe tener 32 caracteres aleatorios para garantizar seguridad.
+    | This key is utilized by Laravel's encryption services and should be set
+    | to a random, 32 character string to ensure that all encrypted values
+    | are secure. You should do this prior to deploying the application.
     |
     */
 
     'cipher' => 'AES-256-CBC',
+
     'key' => env('APP_KEY'),
 
     'previous_keys' => [
@@ -103,8 +110,11 @@ return [
     | Maintenance Mode Driver
     |--------------------------------------------------------------------------
     |
-    | Configuración del modo de mantenimiento.
-    | Se puede manejar mediante “file” o “cache” driver.
+    | These configuration options determine the driver used to determine and
+    | manage Laravel's "maintenance mode" status. The "cache" driver will
+    | allow maintenance mode to be controlled across multiple machines.
+    |
+    | Supported drivers: "file", "cache"
     |
     */
 
@@ -112,66 +122,5 @@ return [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Service Providers
-    |--------------------------------------------------------------------------
-    |
-    | Aquí se listan todos los providers cargados por el framework.
-    | Incluye tanto los predeterminados de Laravel como los propios
-    | del proyecto, como los providers de repositorios personalizados.
-    |
-    | RepositoryServiceProvider:
-    | - Registra las interfaces y sus implementaciones concretas.
-    | - Aplica el principio de inversión de dependencias (SOLID).
-    | - Facilita el desacoplamiento entre servicios y persistencia.
-    |
-    */
-
-  'providers' => [
-
-    /*
-    |--------------------------------------------------------------------------
-    | Core Laravel Providers
-    |--------------------------------------------------------------------------
-    |
-    | Providers esenciales del framework. No deben eliminarse.
-    | Registran los servicios fundamentales: base de datos, archivos, colas, etc.
-    |
-    */
-    Illuminate\Auth\AuthServiceProvider::class,
-    Illuminate\Broadcasting\BroadcastServiceProvider::class,
-    Illuminate\Bus\BusServiceProvider::class,
-    Illuminate\Cache\CacheServiceProvider::class,
-    Illuminate\Database\DatabaseServiceProvider::class, // 👈 Agrega este
-    Illuminate\Foundation\Providers\ConsoleSupportServiceProvider::class,
-    Illuminate\Filesystem\FilesystemServiceProvider::class,
-    Illuminate\Foundation\Providers\FoundationServiceProvider::class,
-    Illuminate\View\ViewServiceProvider::class,
-
-    /*
-    |--------------------------------------------------------------------------
-    | Application Service Providers
-    |--------------------------------------------------------------------------
-    |
-    | Providers específicos del proyecto Freelaworkd.
-    |
-    */
-    App\Providers\AppServiceProvider::class,
-
-    /*
-    |--------------------------------------------------------------------------
-    | Custom Providers
-    |--------------------------------------------------------------------------
-    |
-    | Extensiones adicionales para el dominio del sistema (DDD, SOLID).
-    |
-    */
-    App\Providers\RepositoryServiceProvider::class,
-    Illuminate\Hashing\HashServiceProvider::class,
-     Illuminate\Session\SessionServiceProvider::class,
-
-],
 
 ];

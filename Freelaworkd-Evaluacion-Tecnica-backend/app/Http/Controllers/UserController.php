@@ -7,6 +7,7 @@ use App\Http\Requests\UserUpdateRequest;
 use App\Http\Resources\UserResource;
 use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -14,11 +15,25 @@ use Throwable;
  * ==========================================================================
  * Controlador de Usuarios
  * ==========================================================================
- * 
- * Gestiona el ciclo de vida completo de los usuarios en el sistema.
- * Permite CRUD sobre la tabla `users`, garantizando seguridad mediante
- * autenticación Sanctum y validación estricta por Request classes.
+ * Gestiona las operaciones principales del módulo de usuarios bajo un diseño
+ * basado en servicios (Service Layer). Mantiene una separación clara entre
+ * la lógica de negocio (UserService) y la capa HTTP.
+ *
+ * Funcionalidades:
+ * - CRUD completo de usuarios con validación y respuesta estandarizada.
+ * - Integración con Sanctum para proteger endpoints.
+ * - Endpoint adicional para la asignación de roles, accesible solo a 
+ *   superadministradores.
+ *
+ * Principios aplicados:
+ * - Single Responsibility: el controlador actúa solo como mediador HTTP.
+ * - Dependency Injection: el servicio se inyecta por constructor.
+ * - Clean Architecture: cada capa cumple una función aislada y testable.
+ *
+ * Resultado:
+ * Código mantenible, seguro y alineado con las convenciones RESTful.
  */
+
 class UserController extends Controller
 {
     public function __construct(private UserService $userService) {}
@@ -59,5 +74,23 @@ class UserController extends Controller
         $this->userService->eliminar($id);
         return response()->json(['mensaje' => 'Usuario eliminado correctamente.'], 204);
     }
-    
+
+    /**
+     * Asignar rol a un usuario (solo super_admin)
+     */
+    public function asignarRol(Request $request, int $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'role_id' => 'required|exists:roles,id',
+        ]);
+
+        $usuarioAuth = $request->user();
+
+        $resultado = $this->userService->asignarRol($usuarioAuth, $id, $validated['role_id']);
+
+        return response()->json([
+            'mensaje' => $resultado['mensaje'],
+            'data'    => $resultado['usuario'] ? new UserResource($resultado['usuario']) : null,
+        ], $resultado['status']);
+    }
 }
