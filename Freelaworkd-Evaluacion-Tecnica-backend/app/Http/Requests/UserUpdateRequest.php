@@ -3,6 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+/**
+ * Valida los datos al actualizar un nuevo usuario.
+ */
 
 class UserUpdateRequest extends FormRequest
 {
@@ -16,7 +19,7 @@ class UserUpdateRequest extends FormRequest
         return [
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|email|unique:users,email,' . $this->route('id'),
-            'password' => 'sometimes|string|min:6'
+            'password' => 'sometimes|string|min:6',
         ];
     }
 }

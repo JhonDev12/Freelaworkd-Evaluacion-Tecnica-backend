@@ -3,7 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-
+/**
+ * Valida los datos al actualizar un nuevo proyecto.
+ */
 class ProyectoUpdateRequest extends FormRequest
 {
     public function authorize(): bool

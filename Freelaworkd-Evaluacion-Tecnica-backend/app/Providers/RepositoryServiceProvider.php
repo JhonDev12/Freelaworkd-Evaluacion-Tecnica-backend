@@ -6,14 +6,18 @@ use Illuminate\Support\ServiceProvider;
 use App\Repositories\Contracts\ProyectoRepositoryInterface;
 use App\Repositories\ProyectoRepository;
 use App\Repositories\Contracts\PropuestaRepositoryInterface;
+use App\Repositories\Contracts\RoleRepositoryInterface;
+use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Repositories\PropuestaRepository;
+use App\Repositories\RoleRepository;
+use App\Repositories\UserRepository;
 
 /**
  * RepositoryServiceProvider
  *
  * Registra las dependencias entre las interfaces de repositorio
- * y sus implementaciones concretas. Aplica el principio de 
- * Inversión de Dependencias (SOLID - D), garantizando que los 
+ * y sus implementaciones concretas. Aplica el principio de
+ * Inversión de Dependencias (SOLID - D), garantizando que los
  * servicios trabajen sobre abstracciones en lugar de clases concretas.
  *
  * Beneficios:
@@ -30,6 +34,8 @@ class RepositoryServiceProvider extends ServiceProvider
     {
         $this->app->bind(ProyectoRepositoryInterface::class, ProyectoRepository::class);
         $this->app->bind(PropuestaRepositoryInterface::class, PropuestaRepository::class);
+        $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
+        $this->app->bind(RoleRepositoryInterface::class, RoleRepository::class);
     }
 
     /**

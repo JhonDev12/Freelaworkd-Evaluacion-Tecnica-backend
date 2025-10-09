@@ -3,16 +3,34 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use App\Models\Role;
 
 class RoleSeeder extends Seeder
 {
+    /**
+     * Registra los roles base del sistema.
+     */
     public function run(): void
     {
-        DB::table('roles')->insert([
-            ['nombre' => 'super_admin', 'descripcion' => 'Control total del sistema'],
-            ['nombre' => 'admin', 'descripcion' => 'Gestión de usuarios y proyectos'],
-            ['nombre' => 'user', 'descripcion' => 'Usuario estándar del sistema'],
+        Role::insert([
+            [
+                'nombre' => 'super_admin',
+                'descripcion' => 'Control total del sistema',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'nombre' => 'admin',
+                'descripcion' => 'Gestión de usuarios y proyectos',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'nombre' => 'user',
+                'descripcion' => 'Usuario estándar del sistema',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 }

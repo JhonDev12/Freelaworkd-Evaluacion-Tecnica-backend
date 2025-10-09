@@ -9,11 +9,25 @@ use App\Services\ProyectoService;
 use Illuminate\Http\JsonResponse;
 
 /**
- * Controlador de Proyectos.
- * 
- * Gestiona las operaciones CRUD mediante la capa de servicios.
- * Aplica validaciones con Form Requests y formatea las respuestas
- * con API Resources para mantener consistencia en la API.
+ * ==========================================================================
+ * Controlador de Proyectos
+ * ==========================================================================
+ * Gestiona las operaciones CRUD del módulo de proyectos siguiendo el patrón
+ * Service-Controller. Cada acción delega la lógica de negocio al 
+ * ProyectoService, asegurando una arquitectura limpia y mantenible.
+ *
+ * Características:
+ * - Validaciones centralizadas mediante Form Requests.
+ * - Respuestas estandarizadas con API Resources.
+ * - Integración con autenticación Sanctum para asociar proyectos al usuario.
+ *
+ * Principios aplicados:
+ * - Separation of Concerns: el controlador solo coordina el flujo HTTP.
+ * - Dependency Injection: el servicio se inyecta automáticamente.
+ * - RESTful design: endpoints consistentes y predecibles.
+ *
+ * Resultado:
+ * Controlador liviano, seguro y alineado con las mejores prácticas de Laravel.
  */
 class ProyectoController extends Controller
 {
