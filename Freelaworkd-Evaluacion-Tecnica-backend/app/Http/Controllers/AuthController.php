@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\AuthLoginRequest;
 use App\Http\Requests\AuthRegisterRequest;
 use App\Services\AuthService;
-use Dotenv\Exception\ValidationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -43,9 +42,8 @@ class AuthController extends Controller
             return response()->json([
                 'mensaje' => 'Usuario registrado correctamente.',
                 'data'    => $data,
-            ], 201);
-
-        } catch (Throwable $e) {
+            ], 200);
+        } catch (\Throwable $e) {
             Log::error('Error al registrar usuario', ['error' => $e->getMessage()]);
 
             return response()->json([
@@ -54,6 +52,14 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * Inicia sesión y genera un token de acceso.
+     *
+     * - Valida las credenciales mediante AuthService.
+     * - Si son correctas, devuelve un token junto con los datos del usuario.
+     * - Si las credenciales son inválidas, devuelve un error 401.
+     * - Si ocurre un error interno, registra el evento en el log.
+     */
     public function login(AuthLoginRequest $request): JsonResponse
     {
         try {
@@ -63,13 +69,12 @@ class AuthController extends Controller
                 'mensaje' => 'Inicio de sesión exitoso.',
                 'data'    => $data,
             ], 200);
-
-        } catch (ValidationException $e) {
+        } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
-                'mensaje' => 'Credenciales incorrectas.',
+                'mensaje' => $e->getMessage() ?: 'Credenciales incorrectas.',
+                'errores' => $e->errors(),
             ], 401);
-
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             Log::error('Error al iniciar sesión', ['error' => $e->getMessage()]);
 
             return response()->json([
