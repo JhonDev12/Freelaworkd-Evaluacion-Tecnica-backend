@@ -76,29 +76,70 @@ Si deseas poblar datos iniciales (roles, usuarios de prueba, etc.):
 php artisan db:seed
 
 Estructura de Base de Datos
-Tabla	Propósito	Relaciones
-roles	Define los roles del sistema (administrador, cliente, freelancer, etc.)	hasMany(User)
-users	Registra los usuarios del sistema	belongsTo(Role), belongsToMany(Habilidad), hasMany(Proyecto), hasMany(Propuesta)
-habilidades	Contiene las habilidades disponibles	belongsToMany(User)
-user_habilidad	Tabla pivote usuario ↔ habilidad	user_id → users.id, habilidad_id → habilidades.id
-proyectos	Proyectos creados por los usuarios	belongsTo(User), hasMany(Propuesta)
-propuestas	Ofertas o postulaciones a proyectos	belongsTo(User, 'usuario_id'), belongsTo(Proyecto)
-personal_access_tokens	Tokens personales usados por Laravel Sanctum	morphs('tokenable')
-password_reset_tokens, sessions	Tablas auxiliares internas del framework	—
+
+La siguiente tabla describe las entidades principales del sistema, su propósito y relaciones dentro del modelo Eloquent.
+
+Tabla	Propósito	Relaciones Principales
+roles	Define los roles del sistema (administrador, cliente, freelancer, etc.).	hasMany(User)
+
+users	Registra los usuarios del sistema.	belongsTo(Role), belongsToMany(Habilidad), hasMany(Proyecto), hasMany(Propuesta)
+
+habilidades	Contiene las habilidades disponibles.	belongsToMany(User)
+user_habilidad	Tabla pivote usuario ↔ habilidad.	user_id → users.id, habilidad_id → habilidades.id
+
+proyectos	Proyectos creados por los usuarios.	belongsTo(User), hasMany(Propuesta)
+
+propuestas	Ofertas o postulaciones a proyectos.	belongsTo(User, 'usuario_id'), belongsTo(Proyecto)
+
+personal_access_tokens	Tokens personales generados por Laravel Sanctum.	morphs('tokenable')
+
+password_reset_tokens, sessions	Tablas auxiliares internas del framework.	—
+
 Relaciones Eloquent
-// User.php
-public function role() { return $this->belongsTo(Role::class); }
-public function habilidades() { return $this->belongsToMany(Habilidad::class, 'user_habilidad'); }
-public function proyectos() { return $this->hasMany(Proyecto::class); }
-public function propuestas() { return $this->hasMany(Propuesta::class, 'usuario_id'); }
 
-// Proyecto.php
-public function usuario() { return $this->belongsTo(User::class); }
-public function propuestas() { return $this->hasMany(Propuesta::class); }
+Modelo User.php
 
-// Propuesta.php
-public function proyecto() { return $this->belongsTo(Proyecto::class); }
-public function usuario() { return $this->belongsTo(User::class, 'usuario_id'); }
+public function role()
+{
+    return $this->belongsTo(Role::class);
+}
+
+public function habilidades()
+{
+    return $this->belongsToMany(Habilidad::class, 'user_habilidad');
+}
+
+public function proyectos()
+{
+    return $this->hasMany(Proyecto::class);
+}
+
+public function propuestas()
+{
+    return $this->hasMany(Propuesta::class, 'usuario_id');
+}
+
+Modelo Proyecto.php
+public function usuario()
+{
+    return $this->belongsTo(User::class);
+}
+
+public function propuestas()
+{
+    return $this->hasMany(Propuesta::class);
+}
+
+Modelo Propuesta.php
+public function proyecto()
+{
+    return $this->belongsTo(Proyecto::class);
+}
+
+public function usuario()
+{
+    return $this->belongsTo(User::class, 'usuario_id');
+}
 
 Decisiones Técnicas Justificadas
 
