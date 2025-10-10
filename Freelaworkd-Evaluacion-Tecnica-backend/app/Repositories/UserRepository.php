@@ -14,33 +14,48 @@ use App\Repositories\Contracts\UserRepositoryInterface;
  */
 class UserRepository implements UserRepositoryInterface
 {
+    /**
+     * Obtiene todos los usuarios con sus relaciones principales.
+     */
     public function obtenerTodos()
     {
-        return User::with('role')->get();
-    }
-
-    public function crear(array $data): User
-    {
-        return User::create($data);
+        // Incluimos tanto el rol como las habilidades
+        return User::with(['role', 'habilidades'])->get();
     }
 
     /**
-     * Busca un usuario por ID, incluyendo sus roles y habilidades.
-     * Lanza ModelNotFoundException si no existe.
+     * Crea un nuevo usuario.
+     */
+    public function crear(array $data): User
+    {
+        $usuario = User::create($data);
+
+        // Carga relaciones para devolver un objeto completo
+        return $usuario->load(['role', 'habilidades']);
+    }
+
+    /**
+     * Busca un usuario por ID, incluyendo roles y habilidades.
      */
     public function obtenerPorId(int $id): User
     {
-        return User::with('role', 'habilidades')->findOrFail($id);
+        return User::with(['role', 'habilidades'])->findOrFail($id);
     }
 
+    /**
+     * Actualiza un usuario y devuelve el modelo con relaciones actualizadas.
+     */
     public function actualizar(int $id, array $data): User
     {
         $usuario = $this->obtenerPorId($id);
         $usuario->update($data);
 
-        return $usuario;
+        return $usuario->load(['role', 'habilidades']);
     }
 
+    /**
+     * Elimina un usuario.
+     */
     public function eliminar(int $id): void
     {
         $this->obtenerPorId($id)->delete();
@@ -55,6 +70,6 @@ class UserRepository implements UserRepositoryInterface
         $usuario = $this->obtenerPorId($usuarioId);
         $usuario->habilidades()->sync($habilidades);
 
-        return $usuario->load('habilidades');
+        return $usuario->load(['role', 'habilidades']);
     }
 }

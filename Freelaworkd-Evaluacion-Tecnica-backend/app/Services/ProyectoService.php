@@ -37,7 +37,7 @@ class ProyectoService
 
     public function crear(array $datos, int $userId)
     {
-        $datos['usuario_id'] = $userId;
+        $datos['user_id'] = $userId;
 
         return $this->proyectoRepository->crear($datos);
     }

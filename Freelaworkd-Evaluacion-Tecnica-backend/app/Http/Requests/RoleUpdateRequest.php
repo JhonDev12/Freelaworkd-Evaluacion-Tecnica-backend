@@ -3,22 +3,22 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
+ * ==========================================================================
  * RoleUpdateRequest
+ * ==========================================================================
+ * Valida los datos enviados al actualizar un rol existente.
+ * Garantiza la unicidad del nombre sin impedir que un rol conserve
+ * su propio nombre durante la edición.
  *
- * Valida los datos al actualizar un rol existente.
- * Incluye reglas de negocio adicionales para garantizar la
- * integridad de los nombres de roles dentro del sistema.
+ * Principios:
+ * - Desacoplamiento de validación (SRP).
+ * - Integridad de datos y consistencia RESTful.
  */
 class RoleUpdateRequest extends FormRequest
 {
-    /**
-     * Determina si el usuario está autorizado a realizar esta solicitud.
-     *
-     * La verificación de permisos (por ejemplo, solo `super_admin`)
-     * se maneja a nivel de controlador.
-     */
     public function authorize(): bool
     {
         return true;
@@ -28,19 +28,15 @@ class RoleUpdateRequest extends FormRequest
     {
         return [
             'nombre' => [
-                'sometimes',
                 'required',
                 'string',
                 'max:50',
-                'unique:roles,nombre,'.$this->route('id'),
+                Rule::unique('roles', 'nombre')->ignore($this->route('role')),
             ],
             'descripcion' => ['nullable', 'string', 'max:255'],
         ];
     }
 
-    /**
-     * Mensajes personalizados para errores de validación.
-     */
     public function messages(): array
     {
         return [

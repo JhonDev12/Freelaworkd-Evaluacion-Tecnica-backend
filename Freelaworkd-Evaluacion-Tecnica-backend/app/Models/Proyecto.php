@@ -32,7 +32,7 @@ class Proyecto extends Model
         'descripcion',
         'presupuesto',
         'estado',
-        'usuario_id',
+        'user_id',
     ];
 
     /**
@@ -45,6 +45,6 @@ class Proyecto extends Model
      */
     public function usuario()
     {
-        return $this->belongsTo(User::class, 'usuario_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

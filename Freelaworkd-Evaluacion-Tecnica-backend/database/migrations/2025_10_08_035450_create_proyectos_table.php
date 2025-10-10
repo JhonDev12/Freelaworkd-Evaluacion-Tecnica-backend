@@ -19,7 +19,8 @@ return new class extends Migration
             $table->enum('estado', ['abierto', 'en progreso', 'finalizado'])->default('abierto');
 
             // Relación con usuarios (propietario del proyecto)
-            $table->foreignId('usuario_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+
 
             $table->timestamps();
         });

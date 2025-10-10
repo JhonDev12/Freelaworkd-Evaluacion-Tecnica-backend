@@ -9,7 +9,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * UserResource
  *
  * Formatea la respuesta JSON del modelo User.
- * Incluye relaciones condicionales (roles y habilidades)
+ * Incluye relaciones condicionales (rol y habilidades)
  * solo cuando han sido cargadas explícitamente mediante `load()`
  * para evitar sobrecarga innecesaria en las consultas.
  */
@@ -21,9 +21,10 @@ class UserResource extends JsonResource
             'id'    => $this->id,
             'name'  => $this->name,
             'email' => $this->email,
+            'role_id' => $this->role_id,
 
-            // Relación con el rol
-            'rol' => $this->whenLoaded('role', function () {
+            // Relación con el rol (clave estandarizada 'role')
+            'role' => $this->whenLoaded('role', function () {
                 return [
                     'id'          => $this->role->id,
                     'nombre'      => $this->role->nombre,
@@ -31,7 +32,7 @@ class UserResource extends JsonResource
                 ];
             }),
 
-            //  Relación con las habilidades
+            // Relación con las habilidades
             'habilidades' => $this->whenLoaded('habilidades', function () {
                 return $this->habilidades->map(function ($habilidad) {
                     return [

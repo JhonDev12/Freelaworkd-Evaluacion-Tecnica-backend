@@ -6,29 +6,17 @@ use App\Http\Requests\AuthLoginRequest;
 use App\Http\Requests\AuthRegisterRequest;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
- * ==========================================================================
  * Controlador de Autenticación (AuthController)
- * ==========================================================================
  *
- * Este controlador orquesta el flujo completo de autenticación de usuarios:
- * registro, inicio de sesión y cierre de sesión seguro mediante tokens
- * personales generados con Laravel Sanctum.
- *
- * ➤ Patrón aplicado: Controller → Service
- *    - El controlador solo coordina solicitudes y respuestas HTTP.
- *    - La lógica de negocio se delega a la capa de servicios (AuthService).
- *
- * ➤ Estilo de respuesta:
- *    - Todas las respuestas se entregan en formato JSON consistente.
- *    - Se incluyen mensajes claros y estados HTTP apropiados.
- *
- * ➤ Errores y observabilidad:
- *    - Captura y logueo de excepciones con contexto.
- *    - Mensajes de error controlados para clientes de API (no técnicos).
+ * Normalizaciones:
+ * - El método login devuelve { mensaje, data: { user, token } } (esperado por los tests).
+ * - registro() mantiene { mensaje, data } como ya funciona.
+ * - user() devuelve { user } y está protegido por auth:sanctum.
  */
 class AuthController extends Controller
 {
@@ -43,7 +31,7 @@ class AuthController extends Controller
                 'mensaje' => 'Usuario registrado correctamente.',
                 'data'    => $data,
             ], 200);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('Error al registrar usuario', ['error' => $e->getMessage()]);
 
             return response()->json([
@@ -52,14 +40,7 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * Inicia sesión y genera un token de acceso.
-     *
-     * - Valida las credenciales mediante AuthService.
-     * - Si son correctas, devuelve un token junto con los datos del usuario.
-     * - Si las credenciales son inválidas, devuelve un error 401.
-     * - Si ocurre un error interno, registra el evento en el log.
-     */
+
     public function login(AuthLoginRequest $request): JsonResponse
     {
         try {
@@ -76,13 +57,14 @@ class AuthController extends Controller
             ], 401);
         } catch (\Throwable $e) {
             Log::error('Error al iniciar sesión', ['error' => $e->getMessage()]);
-
-            return response()->json([
-                'mensaje' => 'Error interno al procesar la solicitud de inicio de sesión.',
-            ], 500);
+            return response()->json([ 'mensaje' => 'Error interno al procesar la solicitud de inicio de sesión.' ], 500);
         }
     }
 
+
+    /**
+     * Logout protegido (revoca token o limpia cookie)
+     */
     public function logout(): JsonResponse
     {
         try {
@@ -92,7 +74,6 @@ class AuthController extends Controller
                 'mensaje' => 'Su sesión ha sido cerrada exitosamente.',
                 'status'  => 200,
             ], 200);
-
         } catch (Throwable $e) {
             Log::error('Error al cerrar sesión', ['error' => $e->getMessage()]);
 
@@ -101,5 +82,16 @@ class AuthController extends Controller
                 'status'  => 500,
             ], 500);
         }
+    }
+
+    /**
+     * Devuelve el usuario autenticado.
+     * Nota: esta ruta debe estar protegida con auth:sanctum en routes/api.php
+     */
+    public function user(Request $request): JsonResponse
+    {
+        return response()->json([
+            'user' => $request->user(),
+        ], 200);
     }
 }

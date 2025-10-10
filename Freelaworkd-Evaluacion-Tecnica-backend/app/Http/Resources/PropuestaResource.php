@@ -6,43 +6,44 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * Recurso JSON responsable de transformar la entidad `Propuesta`
- * en una representación clara y segura para el cliente.
- *
- * Su propósito es desacoplar el modelo interno de la base de datos
- * de la estructura expuesta públicamente, garantizando consistencia
- * en el formato de respuesta de la API.
- *
- * Consideraciones:
- * - Incluye relaciones relevantes (usuario, proyecto) en formato resumido.
- * - Evita exponer datos sensibles del usuario.
- * - Maneja relaciones eliminadas con valores por defecto.
+ * Recurso: PropuestaResource
+ * --------------------------
+ * Estructura uniforme de salida para el modelo Propuesta.
+ * Incluye relaciones de usuario y proyecto para integraciones SPA.
  */
 class PropuestaResource extends JsonResource
 {
     /**
-     * Transforma la instancia del modelo en una estructura JSON serializable.
+     * Transforma el recurso en un array para respuesta JSON.
      *
+     * @param  \Illuminate\Http\Request  $request
      * @return array<string, mixed>
      */
-    public function toArray(Request $request): array
+    public function toArray($request): array
     {
         return [
             'id'              => $this->id,
             'descripcion'     => $this->descripcion,
             'presupuesto'     => $this->presupuesto,
             'tiempo_estimado' => $this->tiempo_estimado,
+            'created_at'      => $this->created_at?->format('Y-m-d H:i:s'),
+            'updated_at'      => $this->updated_at?->format('Y-m-d H:i:s'),
 
-            // Muestra el título del proyecto o indica si fue eliminado
-            'proyecto' => $this->proyecto?->titulo ?? 'Proyecto eliminado',
-            'usuario'  => [
-                'id'    => $this->usuario->id,
-                'name'  => $this->usuario->name,
-                'email' => $this->usuario->email,
-            ],
+            // --- Relaciones ---
+            'proyecto' => $this->whenLoaded('proyecto', function () {
+                return [
+                    'id'     => $this->proyecto->id,
+                    'titulo' => $this->proyecto->titulo,
+                ];
+            }),
 
-            'fecha_creacion'      => $this->created_at?->toDateTimeString(),
-            'fecha_actualizacion' => $this->updated_at?->toDateTimeString(),
+            'usuario' => $this->whenLoaded('usuario', function () {
+                return [
+                    'id'   => $this->usuario->id,
+                    'name' => $this->usuario->name,
+                    'email' => $this->usuario->email,
+                ];
+            }),
         ];
     }
 }

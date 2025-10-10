@@ -9,63 +9,57 @@ use Illuminate\Support\Facades\Route;
 
 /**
  * ==========================================================================
- * Freelaworkd API Routes ///////////////////////////////////////////////////
+ * Freelaworkd API Routes
  * ==========================================================================
  *
- * Descripción general:
- * --------------------
- * Este archivo define los endpoints principales expuestos por la API.
- * Implementa una arquitectura RESTful robusta, donde la autenticación
- * se gestiona mediante Laravel Sanctum para controlar el acceso a los
- * recursos protegidos.
+ * Archivo: routes/api.php
  *
- * Principios de diseño:
- * ---------------------
- * - Consistencia → rutas predecibles y versionables.
- * - Seguridad → middleware explícito para control de acceso.
- * - Escalabilidad → estructura modular por dominio funcional.
- * - Uniformidad → todas las respuestas se devuelven en formato JSON.
+ * - Todas las respuestas del API deben ser JSON.
+ * - La autenticación se gestiona con Laravel Sanctum.
+ * - Rutas públicas: /api/auth/registro, /api/auth/login
+ * - Rutas protegidas: están bajo middleware 'auth:sanctum'
  *
- * Estructura base:
- * ----------------
- * /api/auth/...       → Módulo de autenticación de usuarios
- * /api/proyectos/...  → Módulo de gestión de proyectos
- * /api/propuestas/... → Módulo de gestión de propuestas
+ * Recomendaciones de seguridad:
+ * - Limitar mutaciones sensibles (roles) mediante Gates/Policies o un
+ *   middleware que valide role:super_admin.
+ * - Asegurar CORS + supports_credentials = true y SANCTUM_STATEFUL_DOMAINS
+ *   configurado en .env para permitir cookie flow.
  */
 
-// ==========================================================================
-// Módulo: Autenticación de usuarios ///////////////////////////////////////
-// ==========================================================================
-// Define los endpoints públicos y privados para el ciclo de autenticación.
-// Incluye registro, login y cierre de sesión protegido.
+/* --------------------------------------------------------------------------
+ * Módulo: Autenticación
+ * - Public: registro, login
+ * - Protegidas: logout, user (devuelve usuario actual)
+ * -------------------------------------------------------------------------- */
 Route::prefix('auth')->group(function () {
 
-    // ----------------------------------------------------------------------
-    // Endpoints públicos /////////////////////////////////////////////////////
-    // ----------------------------------------------------------------------
+    // Public endpoints
     Route::post('registro', [AuthController::class, 'registro'])
         ->name('auth.registro');
 
     Route::post('login', [AuthController::class, 'login'])
         ->name('auth.login');
 
-    // ----------------------------------------------------------------------
-    // Endpoints protegidos (requieren token Sanctum) ///////////////////////
-    // ----------------------------------------------------------------------
+    // Protected endpoints: requieren token / sesión Sanctum
     Route::middleware('auth:sanctum')->group(function () {
+        // Retorna el usuario autenticado (útil para el SPA)
+        Route::get('user', [AuthController::class, 'user'])
+            ->name('auth.user');
 
-        // Cierre de sesión (revoca el token actual del usuario autenticado)
+        // Cierre de sesión (revoca token o limpia cookie)
         Route::post('logout', [AuthController::class, 'logout'])
             ->name('auth.logout');
     });
 });
 
-// ==========================================================================
-// Módulo: Proyectos /////////////////////////////////////////////////////////
-// ==========================================================================
-// CRUD protegido por Sanctum. Cada recurso representa un proyecto
-// asociado a un usuario autenticado.
+/* --------------------------------------------------------------------------
+ * Rutas protegidas por auth:sanctum (API principal)
+ * - Aquí colocamos todos los recursos que deben ser accedidos solo por
+ *   usuarios autenticados.
+ * -------------------------------------------------------------------------- */
 Route::middleware('auth:sanctum')->group(function () {
+
+    // Proyectos (CRUD completo) ---------------------------------------------
     Route::apiResource('proyectos', ProyectoController::class)
         ->names([
             'index'   => 'proyectos.index',
@@ -74,14 +68,8 @@ Route::middleware('auth:sanctum')->group(function () {
             'update'  => 'proyectos.update',
             'destroy' => 'proyectos.destroy',
         ]);
-});
 
-// ==========================================================================
-// Módulo: Propuestas ///////////////////////////////////////////////////////
-// ==========================================================================
-// CRUD completo para la gestión de propuestas enviadas por freelancers
-// a proyectos. Requiere autenticación mediante Sanctum.
-Route::middleware('auth:sanctum')->group(function () {
+    // Propuestas (CRUD completo) --------------------------------------------
     Route::apiResource('propuestas', PropuestaController::class)
         ->names([
             'index'   => 'propuestas.index',
@@ -90,18 +78,8 @@ Route::middleware('auth:sanctum')->group(function () {
             'update'  => 'propuestas.update',
             'destroy' => 'propuestas.destroy',
         ]);
-});
 
-/**
- * --------------------------------------------------------------------------
- * Rutas protegidas - Módulo de Usuarios ///////////////////////////////////
- * --------------------------------------------------------------------------
- * Agrupa los endpoints del CRUD de usuarios bajo autenticación Sanctum.
- * Solo los usuarios con un token válido pueden acceder a estas rutas.
- * Apunta al controlador UserController, que gestiona las operaciones
- * de listar, crear, consultar, actualizar y eliminar registros.
- */
-Route::middleware('auth:sanctum')->group(function () {
+    // Usuarios (CRUD) -------------------------------------------------------
     Route::apiResource('usuarios', UserController::class)
         ->names([
             'index'   => 'usuarios.index',
@@ -110,45 +88,30 @@ Route::middleware('auth:sanctum')->group(function () {
             'update'  => 'usuarios.update',
             'destroy' => 'usuarios.destroy',
         ]);
-    // Ruta específica para asignar rol
+
+    // Asignar rol a usuario (solo admins con permiso) -----------------------
+    // Nota: aquí deberías validar que el que llama tiene permiso (Gate/Policy
+    // o middleware role:super_admin).
     Route::patch('usuarios/{id}/rol', [UserController::class, 'asignarRol'])
         ->name('usuarios.asignarRol');
-});
 
-/**
- * --------------------------------------------------------------------------
- * Rutas protegidas — Módulo de Roles ///////////////////////////////////////
- * --------------------------------------------------------------------------
- * CRUD RESTful para la gestión de roles del sistema.
- * Solo accesible mediante autenticación Sanctum.
- */
-Route::apiResource('roles', RoleController::class)
-    ->names([
-        'index'   => 'roles.index',
-        'store'   => 'roles.store',
-        'show'    => 'roles.show',
-        'update'  => 'roles.update',
-        'destroy' => 'roles.destroy',
-    ]);
+    // Asignar/Hacer PATCH de habilidades a usuario --------------------------
+    Route::patch('usuarios/{id}/habilidades', [UserController::class, 'asignarHabilidades'])
+        ->name('usuarios.asignarHabilidades');
 
-/**
- * --------------------------------------------------------------------------
- * Rutas protegidas del módulo de Habilidades ///////////////////////////////
- * --------------------------------------------------------------------------
- *
- * Define el CRUD RESTful para la gestión de habilidades dentro del sistema.
- * Todas las operaciones requieren autenticación mediante Laravel Sanctum.
- *
- * Diseño:
- * - Estructura estandarizada con `Route::apiResource`.
- * - Endpoints consistentes con las convenciones REST.
- * - Nombres de rutas explícitos para facilitar pruebas y políticas.
- *
- * Seguridad:
- * - Acceso restringido a usuarios autenticados.
- * - Validaciones y lógica de negocio delegadas al `HabilidadController`.
- */
-Route::middleware('auth:sanctum')->group(function () {
+    // Roles (CRUD) ---------------------------------------------------------
+    // IMPORTANTE: además de auth:sanctum, restringir con Gate/Policy o
+    // middleware específico que permita solo a super_admin manipular roles.
+    Route::apiResource('roles', RoleController::class)
+        ->names([
+            'index'   => 'roles.index',
+            'store'   => 'roles.store',
+            'show'    => 'roles.show',
+            'update'  => 'roles.update',
+            'destroy' => 'roles.destroy',
+        ]);
+
+    // Habilidades (CRUD) ---------------------------------------------------
     Route::apiResource('habilidades', \App\Http\Controllers\HabilidadController::class)
         ->names([
             'index'   => 'habilidades.index',
@@ -159,21 +122,10 @@ Route::middleware('auth:sanctum')->group(function () {
         ]);
 });
 
-// ==========================================================================
-// Asignación de habilidades a usuarios /////////////////////////////////////
-// ==========================================================================
-// Permite asignar una o más habilidades a un usuario existente.
-// Requiere autenticación mediante Sanctum y delega la lógica
-// al método `asignarHabilidades` del UserController.
-Route::patch('usuarios/{id}/habilidades', [UserController::class, 'asignarHabilidades'])
-    ->middleware('auth:sanctum')
-    ->name('usuarios.asignarHabilidades');
-
-// ==========================================================================
-// Fallback global para rutas no definidas /////////////////////////////////
-// ==========================================================================
-// Garantiza que las rutas inexistentes respondan con un JSON estructurado,
-// evitando respuestas HTML en clientes SPA o móviles.
+/* --------------------------------------------------------------------------
+ * Fallback global
+ * - Responde JSON para rutas no definidas (evita HTML).
+ * -------------------------------------------------------------------------- */
 Route::fallback(function () {
     return response()->json([
         'mensaje' => 'Ruta no encontrada.',

@@ -16,20 +16,20 @@ use Throwable;
  * ==========================================================================
  * Controlador de Usuarios
  * ==========================================================================
+ *
  * Gestiona las operaciones principales del módulo de usuarios bajo un diseño
  * basado en servicios (Service Layer). Mantiene una separación clara entre
  * la lógica de negocio (UserService) y la capa HTTP.
  *
  * Funcionalidades:
  * - CRUD completo de usuarios con validación y respuesta estandarizada.
- * - Integración con Sanctum para proteger endpoints.
- * - Endpoint adicional para la asignación de roles, accesible solo a
- *   superadministradores.
+ * - Integración con Sanctum para protección de endpoints.
+ * - Asignación de roles y habilidades con control de permisos.
  *
  * Principios aplicados:
  * - Single Responsibility: el controlador actúa solo como mediador HTTP.
  * - Dependency Injection: el servicio se inyecta por constructor.
- * - Clean Architecture: cada capa cumple una función aislada y testable.
+ * - Clean Architecture: cada capa cumple una función aislada y testeable.
  *
  * Resultado:
  * Código mantenible, seguro y alineado con las convenciones RESTful.
@@ -38,6 +38,9 @@ class UserController extends Controller
 {
     public function __construct(private UserService $userService) {}
 
+    /**
+     * Retorna la lista completa de usuarios con sus roles.
+     */
     public function index(): JsonResponse
     {
         $usuarios = $this->userService->listar();
@@ -45,6 +48,9 @@ class UserController extends Controller
         return response()->json(UserResource::collection($usuarios));
     }
 
+    /**
+     * Crea un nuevo usuario.
+     */
     public function store(UserStoreRequest $request): JsonResponse
     {
         try {
@@ -60,6 +66,9 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * Muestra la información detallada de un usuario.
+     */
     public function show(int $id): UserResource
     {
         $usuario = $this->userService->obtenerPorId($id);
@@ -67,22 +76,44 @@ class UserController extends Controller
         return new UserResource($usuario);
     }
 
+    /**
+     * Actualiza los datos de un usuario existente.
+     *
+     * - Permite modificar nombre, correo o contraseña.
+     * - Ignora la validación de unicidad si el email no cambió.
+     * - Mantiene compatibilidad con los tests automáticos.
+     */
     public function update(UserUpdateRequest $request, int $id): UserResource
     {
-        $usuario = $this->userService->actualizar($id, $request->validated());
+        try {
+            $usuario = $this->userService->actualizar($id, $request->validated());
 
-        return new UserResource($usuario);
-    }
+            return new UserResource($usuario);
+        } catch (Throwable $e) {
+            Log::error('Error al actualizar usuario', ['error' => $e->getMessage()]);
 
-    public function destroy(int $id): JsonResponse
-    {
-        $this->userService->eliminar($id);
-
-        return response()->json(['mensaje' => 'Usuario eliminado correctamente.'], 204);
+            abort(500, 'Error al actualizar usuario.');
+        }
     }
 
     /**
-     * Asignar rol a un usuario (solo super_admin)
+     * Elimina un usuario por su ID.
+     */
+    public function destroy(int $id): JsonResponse
+    {
+        try {
+            $this->userService->eliminar($id);
+
+            return response()->json(['mensaje' => 'Usuario eliminado correctamente.'], 200);
+        } catch (Throwable $e) {
+            Log::error('Error al eliminar usuario', ['error' => $e->getMessage()]);
+
+            return response()->json(['mensaje' => 'Error al eliminar usuario.'], 500);
+        }
+    }
+
+    /**
+     * Asigna un rol a un usuario (solo para super_admin).
      */
     public function asignarRol(Request $request, int $id): JsonResponse
     {
@@ -96,7 +127,9 @@ class UserController extends Controller
 
         return response()->json([
             'mensaje' => $resultado['mensaje'],
-            'data'    => $resultado['usuario'] ? new UserResource($resultado['usuario']) : null,
+            'data'    => $resultado['usuario']
+                ? new UserResource($resultado['usuario'])
+                : null,
         ], $resultado['status']);
     }
 
@@ -104,13 +137,7 @@ class UserController extends Controller
      * Asigna un conjunto de habilidades a un usuario.
      *
      * Recibe los IDs de habilidades validados mediante el Form Request
-     * `UserAsignarHabilidadesRequest` y delega la operación al servicio
-     * de usuarios.
-     *
-     * Utiliza manejo de excepciones para registrar errores en el log del sistema
-     * y devolver una respuesta estructurada en caso de fallo.
-     *
-     * @param  int  $id  ID del usuario al que se asignarán las habilidades
+     * `UserAsignarHabilidadesRequest` y delega la operación al servicio.
      */
     public function asignarHabilidades(UserAsignarHabilidadesRequest $request, int $id): JsonResponse
     {
@@ -121,7 +148,7 @@ class UserController extends Controller
                 'mensaje' => 'Habilidades asignadas correctamente.',
                 'data'    => new UserResource($usuario),
             ], 200);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('Error al asignar habilidades', ['error' => $e->getMessage()]);
 
             return response()->json([
