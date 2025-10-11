@@ -6,6 +6,7 @@ use App\Models\Proyecto;
 use App\Models\User;
 use App\Services\ProyectoService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
 use Tests\TestCase;
 
 class ProyectoServiceAdditionalTest extends TestCase
@@ -23,10 +24,8 @@ class ProyectoServiceAdditionalTest extends TestCase
     /** @test */
     public function puede_crear_un_proyecto_con_datos_validos()
     {
-        // Crear usuario para asociar el proyecto
         $user = User::factory()->create();
 
-        // Datos válidos
         $data = [
             'titulo'      => 'Proyecto Freelaworkd',
             'descripcion' => 'Proyecto de prueba técnica',
@@ -41,22 +40,23 @@ class ProyectoServiceAdditionalTest extends TestCase
         $this->assertInstanceOf(Proyecto::class, $proyecto);
         $this->assertEquals('Proyecto Freelaworkd', $proyecto->titulo);
 
+        // ✅ Se verifica contra user_id, no usuario_id
         $this->assertDatabaseHas('proyectos', [
-            'titulo'     => 'Proyecto Freelaworkd',
-            'usuario_id' => $user->id,
+            'titulo'  => 'Proyecto Freelaworkd',
+            'user_id' => $user->id,
         ]);
     }
 
     /** @test */
     public function obtiene_lista_de_proyectos_existentes()
     {
-        // Crear proyectos en base de datos
-        Proyecto::factory()->count(3)->create();
+        $user = User::factory()->create();
+        Auth::login($user); // ✅ define usuario autenticado
 
-        // Obtenerlos mediante el servicio
+        Proyecto::factory()->count(3)->create(['user_id' => $user->id]);
+
         $proyectos = $this->proyectoService->obtenerTodos();
 
-        // Verificaciones
         $this->assertNotEmpty($proyectos);
         $this->assertCount(3, $proyectos);
     }

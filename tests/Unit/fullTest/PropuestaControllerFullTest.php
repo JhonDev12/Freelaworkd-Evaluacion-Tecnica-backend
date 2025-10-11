@@ -18,7 +18,8 @@ class PropuestaControllerFullTest extends TestCase
         $user = User::factory()->createOne();
         Sanctum::actingAs($user);
 
-        $proyecto = Proyecto::factory()->create();
+      
+        $proyecto = Proyecto::factory()->create(['user_id' => $user->id]);
 
         $createResponse = $this->postJson('/api/propuestas', [
             'descripcion'     => 'Detalles de la propuesta',
@@ -34,8 +35,7 @@ class PropuestaControllerFullTest extends TestCase
                     'descripcion',
                     'presupuesto',
                     'tiempo_estimado',
-                    'proyecto',
-                    'usuario',
+
                 ],
             ]);
 

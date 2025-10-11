@@ -16,9 +16,11 @@ class PropuestaControllerTest extends TestCase
     /** @test */
     public function usuario_autenticado_puede_crear_propuesta()
     {
-        $rol      = Role::factory()->create();
-        $user     = User::factory()->create(['role_id' => $rol->id]);
-        $proyecto = Proyecto::factory()->create(['usuario_id' => $user->id]);
+        $rol  = Role::factory()->create();
+        $user = User::factory()->create(['role_id' => $rol->id]);
+
+     
+        $proyecto = Proyecto::factory()->create(['user_id' => $user->id]);
 
         Sanctum::actingAs($user);
 
@@ -32,7 +34,10 @@ class PropuestaControllerTest extends TestCase
         $response->assertStatus(201)
             ->assertJsonStructure(['data' => ['id', 'descripcion']]);
 
-        $this->assertDatabaseHas('propuestas', ['descripcion' => 'Propuesta sólida']);
+        $this->assertDatabaseHas('propuestas', [
+            'descripcion' => 'Propuesta sólida',
+            'usuario_id'  => $user->id,
+        ]);
     }
 
     /** @test */

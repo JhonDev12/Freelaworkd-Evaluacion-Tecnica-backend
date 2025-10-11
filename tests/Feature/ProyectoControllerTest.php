@@ -32,7 +32,10 @@ class ProyectoControllerTest extends TestCase
         $response->assertStatus(201)
             ->assertJsonStructure(['data' => ['id', 'titulo', 'descripcion']]);
 
-        $this->assertDatabaseHas('proyectos', ['titulo' => 'App Freelaworkd']);
+        $this->assertDatabaseHas('proyectos', [
+            'titulo'  => 'App Freelaworkd',
+            'user_id' => $user->id, 
+        ]);
     }
 
     /** @test */
@@ -40,7 +43,7 @@ class ProyectoControllerTest extends TestCase
     {
         $role = Role::factory()->create();
         $user = User::factory()->create(['role_id' => $role->id]);
-        Proyecto::factory()->count(3)->create(['usuario_id' => $user->id]);
+        Proyecto::factory()->count(3)->create(['user_id' => $user->id]);
 
         Sanctum::actingAs($user);
 
@@ -57,7 +60,7 @@ class ProyectoControllerTest extends TestCase
         $user = User::factory()->create(['role_id' => $role->id]);
         Sanctum::actingAs($user);
 
-        $proyecto = Proyecto::factory()->create(['usuario_id' => $user->id]);
+        $proyecto = Proyecto::factory()->create(['user_id' => $user->id]);
 
         $update = $this->putJson("/api/proyectos/{$proyecto->id}", [
             'titulo'      => 'Actualizado Freelaworkd',
