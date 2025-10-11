@@ -44,7 +44,7 @@ class Propuesta extends Model
      */
     public function usuario()
     {
-        return $this->belongsTo(User::class, 'usuario_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     /**
@@ -58,4 +58,5 @@ class Propuesta extends Model
     {
         return $this->belongsTo(Proyecto::class);
     }
+
 }

@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\Proyecto;
 use App\Repositories\ProyectoRepository;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Servicio de gestión de proyectos.
@@ -16,10 +18,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
  * - Gestionar el ciclo de vida de los proyectos (CRUD).
  * - Validar la existencia de registros antes de operaciones críticas.
  * - Asociar automáticamente el proyecto al usuario autenticado.
- *
- * Esta capa permite mantener un código más limpio, testable
- * y desacoplado del framework, siguiendo el principio de
- * separación de responsabilidades (SoC) y la arquitectura en capas.
+ * - Filtrar resultados según permisos y propiedad.
  */
 class ProyectoService
 {
@@ -30,23 +29,43 @@ class ProyectoService
         $this->proyectoRepository = $proyectoRepository;
     }
 
+    /**
+     * Obtiene los proyectos accesibles al usuario autenticado.
+     */
     public function obtenerTodos()
     {
-        return $this->proyectoRepository->obtenerTodos();
+        $usuario = Auth::user();
+
+        // Admin y Superadmin ven todo
+        if ($usuario && in_array($usuario->role?->nombre, ['admin', 'superadmin'])) {
+            return $this->proyectoRepository->obtenerTodos();
+        }
+
+        // Los demás solo los suyos
+        return Proyecto::where('user_id', $usuario->id)->get();
     }
 
+    /**
+     * Crea un nuevo proyecto asociado al usuario autenticado.
+     */
     public function crear(array $datos, int $userId)
     {
         $datos['user_id'] = $userId;
-
         return $this->proyectoRepository->crear($datos);
     }
 
     public function obtenerPorId(int $id)
     {
         $proyecto = $this->proyectoRepository->obtenerPorId($id);
+
         if (! $proyecto) {
             throw new ModelNotFoundException('Proyecto no encontrado.');
+        }
+
+        $usuario = Auth::user();
+        if (!in_array($usuario->role?->nombre, ['admin', 'superadmin']) &&
+            $proyecto->user_id !== $usuario->id) {
+            throw new ModelNotFoundException('No autorizado para ver este proyecto.');
         }
 
         return $proyecto;
@@ -54,11 +73,35 @@ class ProyectoService
 
     public function actualizar(int $id, array $datos)
     {
+        $proyecto = $this->proyectoRepository->obtenerPorId($id);
+
+        if (! $proyecto) {
+            throw new ModelNotFoundException('Proyecto no encontrado.');
+        }
+
+        $usuario = Auth::user();
+        if (!in_array($usuario->role?->nombre, ['admin', 'superadmin']) &&
+            $proyecto->user_id !== $usuario->id) {
+            throw new ModelNotFoundException('No autorizado para actualizar este proyecto.');
+        }
+
         return $this->proyectoRepository->actualizar($id, $datos);
     }
 
     public function eliminar(int $id): void
     {
+        $proyecto = $this->proyectoRepository->obtenerPorId($id);
+
+        if (! $proyecto) {
+            throw new ModelNotFoundException('Proyecto no encontrado.');
+        }
+
+        $usuario = Auth::user();
+        if (!in_array($usuario->role?->nombre, ['admin', 'superadmin']) &&
+            $proyecto->user_id !== $usuario->id) {
+            throw new ModelNotFoundException('No autorizado para eliminar este proyecto.');
+        }
+
         $this->proyectoRepository->eliminar($id);
     }
 }

@@ -17,6 +17,8 @@ use Laravel\Sanctum\HasApiTokens;
  * - Usa hashing automático de contraseñas a través del cast 'hashed'.
  * - Incluye notificaciones y tokens de API para autenticación segura.
  * - Define relaciones con roles, proyectos, propuestas y habilidades.
+ * - Incorpora métodos auxiliares para la verificación de roles,
+ *   sin depender de paquetes externos.
  */
 class User extends Authenticatable
 {
@@ -57,6 +59,10 @@ class User extends Authenticatable
             'role_id'           => 'integer',
         ];
     }
+
+    // =========================================================================
+    // RELACIONES
+    // =========================================================================
 
     /**
      * Relación con el modelo Role.
@@ -108,5 +114,69 @@ class User extends Authenticatable
     public function propuestas()
     {
         return $this->hasMany(Propuesta::class, 'usuario_id');
+    }
+
+    // =========================================================================
+    // MÉTODOS AUXILIARES DE ROLES
+    // =========================================================================
+
+    /**
+     * Verifica si el usuario tiene alguno de los roles especificados.
+     *
+     * @param  string|array  $roles
+     * @return bool
+     */
+    public function hasRole($roles): bool
+    {
+        $roles = is_array($roles) ? $roles : [$roles];
+
+        // Si tiene relación con Role
+        if ($this->relationLoaded('role') || isset($this->role)) {
+            $nombreRol = strtolower($this->role->nombre ?? $this->role->name ?? '');
+            return in_array($nombreRol, array_map('strtolower', $roles));
+        }
+
+        // Si solo tiene role_id (mapa rápido)
+        if (isset($this->role_id)) {
+            $map = [
+                1 => 'superadmin',
+                2 => 'admin',
+                3 => 'usuario',
+            ];
+            $nombreRol = strtolower($map[$this->role_id] ?? '');
+            return in_array($nombreRol, array_map('strtolower', $roles));
+        }
+
+        return false;
+    }
+
+    /**
+     * Determina si el usuario es administrador.
+     *
+     * @return bool
+     */
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('admin');
+    }
+
+    /**
+     * Determina si el usuario es superadministrador.
+     *
+     * @return bool
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasRole('superadmin');
+    }
+
+    /**
+     * Determina si el usuario es un usuario normal (sin privilegios administrativos).
+     *
+     * @return bool
+     */
+    public function isUsuarioNormal(): bool
+    {
+        return $this->hasRole('usuario');
     }
 }

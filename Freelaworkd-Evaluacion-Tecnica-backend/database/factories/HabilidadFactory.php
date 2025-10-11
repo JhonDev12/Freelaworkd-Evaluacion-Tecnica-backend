@@ -8,10 +8,12 @@ class HabilidadFactory extends Factory
 {
     public function definition(): array
     {
+        $niveles = ['básico', 'intermedio', 'avanzado'];
+
         return [
-            'nombre'      => $this->faker->unique()->word(),
-            'descripcion' => $this->faker->sentence(),
-            'nivel'       => $this->faker->randomElement(['básico', 'intermedio', 'avanzado']),
+            'nombre' => ucfirst($this->faker->unique()->word()),
+            'descripcion' => $this->faker->sentence(8),
+            'nivel' => $this->faker->randomElement($niveles),
         ];
     }
 }
