@@ -27,10 +27,10 @@ class PropuestaUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'descripcion'     => ['sometimes', 'string', 'max:1000'],
-            'presupuesto'     => ['sometimes', 'numeric', 'min:1'],
-            'tiempo_estimado' => ['sometimes', 'integer', 'min:1', 'max:365'],
-            'fecha_entrega'   => ['nullable', 'date', 'after:today'],
+            'descripcion'     => 'sometimes|required|string|max:255',
+            'presupuesto'     => 'sometimes|required|numeric|min:1',
+            'tiempo_estimado' => 'sometimes|required|integer|min:1',
+            'proyecto_id'     => 'sometimes|exists:proyectos,id',
         ];
     }
 
