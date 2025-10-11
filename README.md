@@ -1,11 +1,20 @@
-Freelaworkd — Evaluación Técnica Backend
+FREELAWORKD — EVALUACIÓN TÉCNICA (BACKEND LARAVEL)
 
-Evaluación técnica desarrollada como parte del proceso Full Stack Junior (Laravel/Vue.js) para Iyata.
-Este backend fue diseñado siguiendo buenas prácticas de arquitectura, estándares PSR-12 y principios SOLID, priorizando claridad, escalabilidad, seguridad y mantenibilidad.
+Descripción
+Proyecto backend desarrollado para la evaluación técnica Full Stack (Laravel/Vue.js) de Iyata. Implementa autenticación con Laravel Sanctum, CRUDs principales (usuarios, roles, habilidades, proyectos, propuestas) y prácticas de arquitectura limpias con estándares PSR-12 y principios SOLID, priorizando claridad, escalabilidad, seguridad y mantenibilidad.
 
-Requisitos Previos
+CREDENCIALES DE ACCESO (ENTORNO LOCAL / DEMO)
 
-Antes de instalar el proyecto, asegúrate de contar con el siguiente entorno configurado:
+Estas credenciales se crean mediante los seeders para facilitar la revisión.
+
+Rol: Super Admin
+Email: jhon@example.com
+
+Contraseña: 12345678
+
+IMPORTANTE: No usar estas credenciales en producción. Cámbialas y regenera la contraseña antes de desplegar.
+
+REQUISITOS PREVIOS
 
 PHP 8.x o superior
 
@@ -13,36 +22,32 @@ Composer
 
 MySQL o MariaDB
 
-Extensiones PHP requeridas: pdo, mbstring, tokenizer, ctype, json, openssl
+Extensiones PHP: pdo, mbstring, tokenizer, ctype, json, openssl
 
 Git
 
-Servidor local Apache o Nginx (o usar php artisan serve)
+Servidor local (Apache/Nginx) o “php artisan serve”
 
 Opcional: Docker y Docker Compose
 
-Clonación del Repositorio
+CLONACIÓN DEL REPOSITORIO
+
 git clone https://github.com/JhonDev12/Freelaworkd-Evaluacion-Tecnica-backend.git
+
 cd Freelaworkd-Evaluacion-Tecnica-backend/Freelaworkd-Evaluacion-Tecnica-backend
 
+Verifica que te encuentres en el directorio del backend antes de continuar.
 
-Verifica que te encuentres en el directorio correcto del backend antes de continuar.
-
-Instalación de Dependencias
-
-Ejecuta el siguiente comando para instalar todas las dependencias definidas en el archivo composer.json:
+INSTALACIÓN DE DEPENDENCIAS
 
 composer install
 
-Configuración del Entorno
+CONFIGURACIÓN DEL ENTORNO
 
-Copia el archivo de entorno de ejemplo y renómbralo a .env:
-
+Copiar el archivo de entorno de ejemplo:
 cp .env.example .env
 
-
-Edita el archivo .env con tus valores locales:
-
+Editar .env con tus valores locales mínimos:
 APP_NAME=Freelaworkd
 APP_ENV=local
 APP_KEY=
@@ -56,357 +61,233 @@ DB_DATABASE=freelaworkd
 DB_USERNAME=root
 DB_PASSWORD=
 
-
-Genera la clave de aplicación:
-
+Generar la clave de aplicación:
 php artisan key:generate
 
-Migraciones y Seeders
+(Recomendado para integración SPA con Sanctum)
+En .env y config/cors.php habilitar supports_credentials=true.
+Configurar SANCTUM_STATEFUL_DOMAINS con el host del frontend (por ejemplo: localhost:5173).
 
-El proyecto utiliza migraciones para definir y versionar la base de datos.
-Esto permite replicar fácilmente la estructura en cualquier entorno con un solo comando.
+MIGRACIONES Y SEEDERS
 
-Ejecutar las migraciones:
-
+Aplicar migraciones:
 php artisan migrate
 
+Sembrar datos base (roles, usuario Super Admin y datasets de prueba):
+php artisan db:seed --class=Database\Seeders\DatabaseSeeder
+(Si necesitas ejecutar por partes, primero: php artisan db:seed --class=Database\Seeders\RoleSeeder)
 
-Si deseas poblar datos iniciales (roles, usuarios de prueba, etc.):
+Al finalizar, podrás iniciar sesión con el Super Admin indicado arriba.
 
-php artisan db:seed
+ESTRUCTURA DE BASE DE DATOS (RESUMEN)
 
-Estructura de Base de Datos
+roles → define roles del sistema
+users → usuarios, pertenece a roles; relaciones con habilidades, proyectos, propuestas
+habilidades → catálogo de habilidades
+user_habilidad (pivot) → relación muchos a muchos entre usuarios y habilidades
+proyectos → proyectos creados por usuarios
+propuestas → postulaciones/ofertas a proyectos (usuario y proyecto asociados)
+personal_access_tokens → tokens de Sanctum
+password_reset_tokens, sessions → tablas auxiliares del framework
 
-La siguiente tabla describe las entidades principales del sistema, su propósito y relaciones dentro del modelo Eloquent.
+Relaciones Eloquent principales:
 
-Tabla	Propósito	Relaciones Principales
-roles	Define los roles del sistema (administrador, cliente, freelancer, etc.).	hasMany(User)
+User belongsTo Role
 
-users	Registra los usuarios del sistema.	belongsTo(Role), belongsToMany(Habilidad), hasMany(Proyecto), hasMany(Propuesta)
+User belongsToMany Habilidad (tabla pivote: user_habilidad)
 
-habilidades	Contiene las habilidades disponibles.	belongsToMany(User)
-user_habilidad	Tabla pivote usuario ↔ habilidad.	user_id → users.id, habilidad_id → habilidades.id
+User hasMany Proyecto
 
-proyectos	Proyectos creados por los usuarios.	belongsTo(User), hasMany(Propuesta)
+User hasMany Propuesta (clave foránea usuario_id)
 
-propuestas	Ofertas o postulaciones a proyectos.	belongsTo(User, 'usuario_id'), belongsTo(Proyecto)
+Proyecto belongsTo User, Proyecto hasMany Propuesta
 
-personal_access_tokens	Tokens personales generados por Laravel Sanctum.	morphs('tokenable')
+Propuesta belongsTo Proyecto, Propuesta belongsTo User (usuario_id)
 
-password_reset_tokens, sessions	Tablas auxiliares internas del framework.	—
+Criterios de integridad:
 
-Relaciones Eloquent
+Claves foráneas con onDelete('cascade') u onDelete('set null') según el caso
 
-Modelo User.php
+Normalización en 3FN para evitar duplicidades
 
-public function role()
-{
-    return $this->belongsTo(Role::class);
-}
+API (PREFIJO /api) Y AUTENTICACIÓN
 
-public function habilidades()
-{
-    return $this->belongsToMany(Habilidad::class, 'user_habilidad');
-}
+Autenticación (Laravel Sanctum). Para SPA con cookies, configurar correctamente CORS y SANCTUM_STATEFUL_DOMAINS. Alternativamente, pueden usarse tokens personales.
 
-public function proyectos()
-{
-    return $this->hasMany(Proyecto::class);
-}
+Autenticación (/api/auth)
 
-public function propuestas()
-{
-    return $this->hasMany(Propuesta::class, 'usuario_id');
-}
+POST /api/auth/registro → registro de usuario (público)
 
-Modelo Proyecto.php
-public function usuario()
-{
-    return $this->belongsTo(User::class);
-}
+POST /api/auth/login → login y emisión de cookie/token (público)
 
-public function propuestas()
-{
-    return $this->hasMany(Propuesta::class);
-}
+GET /api/auth/user → usuario autenticado (auth:sanctum)
 
-Modelo Propuesta.php
-public function proyecto()
-{
-    return $this->belongsTo(Proyecto::class);
-}
+POST /api/auth/logout → logout y revocación (auth:sanctum)
 
-public function usuario()
-{
-    return $this->belongsTo(User::class, 'usuario_id');
-}
+Proyectos (/api/proyectos)
 
-Decisiones Técnicas Justificadas
+GET /api/proyectos → listar (auth)
 
-Integridad referencial completa: todas las claves foráneas incluyen onDelete('cascade') o onDelete('set null') según el caso.
+POST /api/proyectos → crear (auth)
 
-Relación muchos a muchos entre usuarios y habilidades implementada mediante la tabla pivote user_habilidad.
+GET /api/proyectos/{id} → ver (auth)
 
-Campos ENUM para definir dominios controlados (como estado en proyectos y nivel en habilidades).
+PUT /api/proyectos/{id} → actualizar (auth)
 
-Autenticación implementada con Laravel Sanctum, permitiendo sesiones seguras y tokens personales.
+DELETE /api/proyectos/{id} → eliminar (auth)
+Notas: estado con dominio controlado: abierto, en progreso, finalizado.
 
-Estructura modular y extensible que permite agregar fácilmente nuevas entidades sin modificar las existentes.
+Propuestas (/api/propuestas)
 
-Normalización de la base de datos en tercera forma normal (3NF) para evitar duplicidad de datos.
+GET /api/propuestas → listar (auth)
 
-Diseño preparado para soportar pruebas unitarias y de integración.
+POST /api/propuestas → crear (auth)
 
-Herramientas de Calidad y Análisis Estático
-Laravel Pint (Formateo de Código)
+GET /api/propuestas/{id} → ver (auth)
 
-Laravel Pint asegura que todo el código cumpla con el estándar PSR-12 y mantiene un estilo uniforme.
+PUT /api/propuestas/{id} → actualizar (auth)
 
-Instalación:
+DELETE /api/propuestas/{id} → eliminar (auth)
+Notas: pertenece a usuario (usuario_id) y proyecto (proyecto_id); incluye descripcion, presupuesto, tiempo_estimado.
 
-composer require laravel/pint --dev
+Usuarios (/api/usuarios)
 
+GET /api/usuarios → listar (auth)
 
-Ejecución:
+POST /api/usuarios → crear (solo admin)
 
-vendor/bin/pint
+GET /api/usuarios/{id} → ver (auth)
 
+PUT /api/usuarios/{id} → actualizar (auth)
 
-Se recomienda ejecutarlo antes de cada commit o integrarlo al pipeline de CI/CD.
+DELETE /api/usuarios/{id} → eliminar (auth)
+
+PATCH /api/usuarios/{id}/rol → asignar rol (requiere permisos elevados)
+
+PATCH /api/usuarios/{id}/habilidades → gestionar habilidades del usuario (auth)
+Notas: validar permisos con Gates/Policies o middleware (por ejemplo, role:super_admin).
+
+Roles (/api/roles)
+
+GET /api/roles → listar (auth)
+
+POST /api/roles → crear (solo super admin)
+
+GET /api/roles/{id} → ver (auth)
+
+PUT /api/roles/{id} → actualizar (solo super admin)
+
+DELETE /api/roles/{id} → eliminar (solo super admin)
+
+Habilidades (/api/habilidades)
+
+GET /api/habilidades → listar (auth)
+
+POST /api/habilidades → crear (auth)
+
+GET /api/habilidades/{id} → ver (auth)
+
+PUT /api/habilidades/{id} → actualizar (auth)
+
+DELETE /api/habilidades/{id} → eliminar (auth)
+Notas: asignación a usuarios mediante la tabla pivote user_habilidad.
+
+Fallback global
+
+Respuesta 404 JSON: { "mensaje": "Ruta no encontrada." }
+
+HERRAMIENTAS DE CALIDAD Y ANÁLISIS ESTÁTICO
+
+Laravel Pint (formato PSR-12)
+
+Instalación: composer require laravel/pint --dev
+
+Uso: vendor/bin/pint
 
 Larastan (PHPStan para Laravel)
 
-Herramienta de análisis estático que detecta errores, tipos incorrectos y malas prácticas antes de la ejecución.
+Instalación: composer require --dev nunomaduro/larastan
 
-Instalación:
+Publicar config: php artisan vendor:publish --provider="NunoMaduro\Larastan\LarastanServiceProvider"
 
-composer require --dev nunomaduro/larastan
-
-
-Configuración inicial:
-
-php artisan vendor:publish --provider="NunoMaduro\Larastan\LarastanServiceProvider"
-
-
-Esto crea el archivo phpstan.neon.dist, donde se puede ajustar el nivel de análisis:
-
+Configuración sugerida (phpstan.neon.dist):
 parameters:
-  level: 6
-  paths:
-    - app
-  excludePaths:
-    - vendor
+level: 6
+paths:
+- app
+excludePaths:
+- vendor
 
+Análisis: vendor/bin/phpstan analyse
 
-Ejecución:
+Xdebug (cobertura con PHPUnit)
 
-vendor/bin/phpstan analyse
+Verificar instalación: php -v
 
+Cobertura: php artisan test --coverage
 
-Un nivel de 5 a 7 se considera adecuado para entornos productivos.
+Objetivo sugerido de cobertura mínima: ≥ 60%
 
-Xdebug (Cobertura de Código en Pruebas Unitarias)
+EJECUCIÓN LOCAL RÁPIDA
 
-Xdebug permite medir la cobertura del código en las pruebas ejecutadas con PHPUnit.
+composer install
 
-Pasos de instalación en Windows (XAMPP)
+cp .env.example .env
 
-Visitar https://xdebug.org/download
+php artisan key:generate
 
-En “Binarios de Windows”, seleccionar la versión correspondiente a tu PHP (por ejemplo, PHP 8.2 TS VS16 64 bits)
+Configurar DB en .env y crear la base “freelaworkd”
 
-Descargar el archivo .dll (por ejemplo: php_xdebug-3.3.1-8.2-ts-vs16-x86_64.dll)
+php artisan migrate
 
-Mover el archivo a: C:\xampp\php\ext
+php artisan db:seed --class=Database\Seeders\DatabaseSeeder
 
-Editar C:\xampp\php\php.ini y agregar al final:
+php artisan serve
 
-zend_extension="C:\xampp\php\ext\php_xdebug-3.3.1-8.2-ts-vs16-x86_64.dll"
-xdebug.mode=coverage
+Iniciar sesión con:
+Email: jhon@example.com
 
+Contraseña: 12345678
 
-Guardar los cambios y reiniciar Apache desde el panel de XAMPP.
+CONSIDERACIONES DE SEGURIDAD
 
-Verificar la instalación
-php -v
+No exponer credenciales reales en repositorios públicos.
 
+Rotar y encriptar secretos al desplegar.
 
-Debe aparecer una línea similar a:
+Habilitar HTTPS y CORS con supports_credentials=true cuando se use sesión/cookies en SPA.
 
-with Xdebug v3.3.1, Copyright (c) 2002-2024, by Derick Rethans
+Proteger mutaciones sensibles con Policies o middleware específicos.
 
+Responder únicamente JSON para minimizar superficies de ataque.
 
-Si aparece, Xdebug está instalado correctamente.
+PRUEBAS
 
-Medir cobertura
-php artisan test --coverage
+Ejecutar suite: php artisan test
 
+Cobertura (opcional): php artisan test --coverage
 
-Ejemplo de salida:
+Pruebas incluidas: autenticación, creación/edición/eliminación de roles, validaciones y endpoints principales.
 
-Coverage: 67.3%
+DECISIONES TÉCNICAS (RESUMEN)
 
+Arquitectura REST con controladores finos y capa de servicios/repositorios donde aplica.
 
-Esto indica el porcentaje de líneas de código cubiertas por pruebas, cumpliendo con el estándar mínimo del 60% exigido en la evaluación de Iyata.
+Integridad referencial consistente y relaciones Eloquent expresivas.
 
-API Endpoints
+Normalización 3FN y dominios controlados en campos clave.
 
-La API sigue una arquitectura RESTful, con respuestas JSON estandarizadas y autenticación gestionada mediante Laravel Sanctum.
-Todas las rutas protegidas requieren un token válido o una sesión activa generada por Sanctum.
-El prefijo base de la API es /api.
+Laravel Sanctum para autenticación SPA y/o tokens personales.
 
-1. Autenticación (/api/auth)
-Método	Ruta	Descripción	Acceso
-POST	/api/auth/registro	Registra un nuevo usuario.	Público
-POST	/api/auth/login	Inicia sesión y genera token o cookie de sesión.	Público
-GET	/api/auth/user	Retorna los datos del usuario autenticado.	Requiere auth:sanctum
-POST	/api/auth/logout	Cierra sesión y revoca el token.	Requiere auth:sanctum
+Código conforme a PSR-12, análisis estático y cobertura de pruebas.
 
-Notas técnicas:
-
-La autenticación se basa en Laravel Sanctum (modo SPA y tokens personales).
-
-Configurar correctamente SANCTUM_STATEFUL_DOMAINS y supports_credentials=true en config/cors.php para permitir flujo con cookies desde el frontend.
-
-2. Proyectos (/api/proyectos)
-Método	Ruta	Descripción	Acceso
-GET	/api/proyectos	Lista todos los proyectos.	Autenticado
-POST	/api/proyectos	Crea un nuevo proyecto.	Autenticado
-GET	/api/proyectos/{id}	Muestra un proyecto específico.	Autenticado
-PUT/PATCH	/api/proyectos/{id}	Actualiza un proyecto existente.	Autenticado
-DELETE	/api/proyectos/{id}	Elimina un proyecto.	Autenticado
-
-Detalles:
-Los proyectos están asociados a un usuario (propietario).
-El campo estado usa un dominio controlado: ['abierto', 'en progreso', 'finalizado'].
-
-3. Propuestas (/api/propuestas)
-Método	Ruta	Descripción	Acceso
-GET	/api/propuestas	Lista todas las propuestas.	Autenticado
-POST	/api/propuestas	Crea una propuesta vinculada a un proyecto.	Autenticado
-GET	/api/propuestas/{id}	Muestra una propuesta específica.	Autenticado
-PUT/PATCH	/api/propuestas/{id}	Actualiza una propuesta existente.	Autenticado
-DELETE	/api/propuestas/{id}	Elimina una propuesta.	Autenticado
-
-Detalles:
-Cada propuesta pertenece a un usuario (usuario_id) y a un proyecto (proyecto_id), con atributos como descripcion, presupuesto y tiempo_estimado.
-
-4. Usuarios (/api/usuarios)
-Método	Ruta	Descripción	Acceso
-GET	/api/usuarios	Lista todos los usuarios.	Autenticado
-POST	/api/usuarios	Crea un nuevo usuario (solo admin).	Autenticado
-GET	/api/usuarios/{id}	Muestra un usuario específico.	Autenticado
-PUT/PATCH	/api/usuarios/{id}	Actualiza un usuario.	Autenticado
-DELETE	/api/usuarios/{id}	Elimina un usuario.	Autenticado
-PATCH	/api/usuarios/{id}/rol	Asigna un rol a un usuario.	Requiere permisos de administrador
-PATCH	/api/usuarios/{id}/habilidades	Asigna o actualiza las habilidades de un usuario.	Autenticado
-
-Notas:
-
-Las mutaciones sobre roles o asignación de permisos deben validarse con Gates/Policies o un middleware role:super_admin.
-
-Devuelve el usuario actualizado con sus relaciones (role, habilidades).
-
-5. Roles (/api/roles)
-Método	Ruta	Descripción	Acceso
-GET	/api/roles	Lista los roles disponibles.	Autenticado
-POST	/api/roles	Crea un nuevo rol.	Solo super admin
-GET	/api/roles/{id}	Muestra un rol específico.	Autenticado
-PUT/PATCH	/api/roles/{id}	Actualiza un rol.	Solo super admin
-DELETE	/api/roles/{id}	Elimina un rol.	Solo super admin
-
-Notas:
-Se recomienda aplicar validaciones de permisos mediante Policies o middleware específicos.
-
-6. Habilidades (/api/habilidades)
-Método	Ruta	Descripción	Acceso
-GET	/api/habilidades	Lista todas las habilidades.	Autenticado
-POST	/api/habilidades	Crea una nueva habilidad.	Autenticado
-GET	/api/habilidades/{id}	Muestra una habilidad específica.	Autenticado
-PUT/PATCH	/api/habilidades/{id}	Actualiza una habilidad.	Autenticado
-DELETE	/api/habilidades/{id}	Elimina una habilidad.	Autenticado
-
-Notas:
-Las habilidades pueden asignarse a múltiples usuarios mediante la tabla pivote user_habilidad.
-
-7. Fallback Global
-
-Si se accede a una ruta no definida, la API responde con:
-
-{
-  "mensaje": "Ruta no encontrada."
-}
-
-
-Código de estado HTTP: 404 Not Found.
-
-Consideraciones de Seguridad
-
-Todas las mutaciones sensibles (roles, asignaciones, eliminación) deben estar protegidas con middleware de autorización o Policies.
-
-Se debe mantener CORS configurado con supports_credentials=true.
-
-En el frontend (Vue), se recomienda usar withCredentials: true en Axios para mantener la sesión.
-
-Toda la API responde únicamente en JSON, evitando respuestas HTML.
-
-Testing
-
-El proyecto está preparado para pruebas automáticas utilizando PHPUnit y el comando nativo de Laravel:
-
-php artisan test
-
-
-Pruebas implementadas:
-
-Autenticación de usuarios (login y registro).
-
-Creación, actualización y eliminación de roles.
-
-Validaciones de campos obligatorios.
-
-Cobertura general de endpoints principales.
-
-Principios de Arquitectura Aplicados
-
-SOLID: código modular, extensible y de fácil mantenimiento.
-
-DRY (Don’t Repeat Yourself): se evita duplicar lógica mediante helpers, traits y servicios.
-
-KISS (Keep It Simple): diseño claro y sin complejidades innecesarias.
-
-Repository Pattern: separación de la capa de acceso a datos.
-
-Service Layer: centralización de reglas de negocio fuera de los controladores.
-
-Dependency Injection: mejora la testabilidad y reduce el acoplamiento.
-
-Documentación Obligatoria (Requerida por Iyata)
-
-README con instrucciones completas de instalación (backend y frontend).
-
-Documentación de endpoints de la API.
-
-Migraciones de Laravel definidas para toda la estructura de la base de datos.
-
-Archivo .env.example con variables de entorno necesarias.
-
-Decisiones técnicas justificadas.
-
-Resumen de Herramientas de Calidad
-Herramienta	Propósito	Comando Principal
-Laravel Pint	Formateo de código PSR-12	vendor/bin/pint
-Larastan	Análisis estático del código	vendor/bin/phpstan analyse
-Xdebug	Medición de cobertura de pruebas	php artisan test --coverage
-Autor
+AUTOR
 
 Desarrollador: Jhon Smith Meneses
 Rol: Full Stack Developer
 Stack: Laravel, Sanctum, MySQL, REST API
-Repositorio: Freelaworkd Evaluación Técnica Backend
+Repositorio: Freelaworkd — Evaluación Técnica Backend
 
-Conclusión
+NOTAS FINALES
 
-Este proyecto cumple con los criterios técnicos exigidos en la Evaluación Técnica de Iyata 2024.
-La implementación se realizó siguiendo un enfoque profesional, priorizando calidad, documentación y consistencia técnica.
-El resultado es un backend funcional, escalable y alineado con buenas prácticas de desarrollo moderno en Laravel.
+Este backend cumple los criterios de la evaluación técnica de Iyata, con foco en buenas prácticas, documentación clara y una base sólida para integrar el frontend en Vue 3. Para producción, reemplazar credenciales seed, ajustar CORS/HTTPS y revisar Policies de acceso según los perfiles reales.
