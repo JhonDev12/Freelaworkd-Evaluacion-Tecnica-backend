@@ -88,12 +88,12 @@ Configurar `SANCTUM_STATEFUL_DOMAINS` con el host del frontend (por ejemplo: `lo
 
 Aplicar migraciones:  
 ```bash
-php artisan migrate:fresh --seed
+php artisan migrate
 ```
 
 Sembrar datos base (roles, usuario Super Admin y datasets de prueba):  
 ```bash
-php artisan db:seed --class=Database\Seeders\DatabaseSeeder
+php artisan migrate:fresh --seed
 ```
 
 (Si necesitas ejecutar por partes:  
