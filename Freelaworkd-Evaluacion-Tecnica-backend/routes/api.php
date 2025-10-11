@@ -85,6 +85,7 @@ Route::middleware('auth:sanctum')->group(function () {
 // Proyectos recientes (visibles para todos los usuarios autenticados)
 Route::get('proyectos/recientes', [ProyectoController::class, 'recientes'])
     ->name('proyectos.recientes');
+    
 
 // Propuestas recientes (visibles para todos los usuarios autenticados)
 Route::get('propuestas/recientes', [PropuestaController::class, 'recientes'])
